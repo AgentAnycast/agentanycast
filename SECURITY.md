@@ -10,7 +10,7 @@
 
 **Please do NOT open a public GitHub issue for security vulnerabilities.**
 
-Instead, report security issues by emailing: **security@agentanycast.dev**
+Instead, please use [GitHub Security Advisories](https://github.com/AgentAnycast/agentanycast/security/advisories/new) to report vulnerabilities privately.
 
 Please include:
 
@@ -32,8 +32,7 @@ The following are in scope:
 - `agentanycast-node` — P2P daemon
 - `agentanycast-relay` — Relay server
 - `agentanycast-python` — Python SDK
-- `agentanycast-proto` — Protocol definitions
-- Official relay instance at `relay.agentanycast.dev`
+- `agentanycast-proto` -- Protocol definitions
 
 ## Disclosure Policy
 
