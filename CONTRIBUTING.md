@@ -53,7 +53,7 @@ The CLA is needed because:
 
 ### Go (node, relay)
 
-- Follow [Effective Go](https://go.dev/doc/effective-go) conventions
+- Follow [Effective Go](https://go.dev/doc/effective_go) conventions
 - Run `golangci-lint run` before submitting
 - Write table-driven tests
 - Use structured logging (`slog`)
