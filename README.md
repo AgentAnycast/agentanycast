@@ -53,43 +53,64 @@ AgentAnycast automatically handles:
 
 ## Quick Start
 
-### Local network -- zero configuration
+### Try it locally in 2 minutes
 
 ```bash
-pip install agentanycast
+# 1. Build the daemon
+cd agentanycast-node
+go build -o agentanycastd ./cmd/agentanycastd/
+
+# 2. Install the SDK
+cd agentanycast-python
+pip install -e .
+
+# 3. Start an Echo Agent (Terminal 1)
+python examples/hello_world.py server
+
+# 4. Send it a task (Terminal 2)
+python examples/hello_world.py client <PEER_ID from Terminal 1>
 ```
+
+### Local network -- zero configuration
+
+On a LAN, agents discover each other automatically via mDNS:
+
+**Server agent:**
 
 ```python
 from agentanycast import Node, AgentCard, Skill
 
-# Define your agent
 card = AgentCard(
-    name="MyAgent",
-    description="A helpful assistant",
-    skills=[Skill(id="hello", description="Say hello")],
+    name="EchoAgent",
+    description="Echoes back any message",
+    skills=[Skill(id="echo", description="Echo the input")],
 )
 
-# On a LAN, agents discover each other via mDNS -- no relay needed
 async with Node(card=card) as node:
-    print(f"My Peer ID: {node.peer_id}")
+    print(f"Peer ID: {node.peer_id}")
 
-    # Send a task to a remote agent
+    @node.on_task
+    async def handle(task):
+        text = task.messages[-1].parts[0].text
+        await task.complete(artifacts=[{"parts": [{"text": f"Echo: {text}"}]}])
+
+    await node.serve_forever()
+```
+
+**Client agent:**
+
+```python
+from agentanycast import Node, AgentCard
+
+card = AgentCard(name="Client", description="Sends tasks", skills=[])
+
+async with Node(card=card) as node:
     task = await node.send_task(
         peer_id="12D3KooW...",
         message={"role": "user", "parts": [{"text": "Hello!"}]},
     )
     result = await task.wait()
-    print(result.artifacts)
-```
-
-```python
-# On the other side -- receive and handle tasks
-@node.on_task
-async def handle(task):
-    await task.update_status("working")
-    await task.complete(artifacts=[{"parts": [{"text": "Hello back!"}]}])
-
-await node.serve_forever()
+    print(result.artifacts[0].parts[0].text)  # "Echo: Hello!"
 ```
 
 ### Cross-network -- deploy your own relay
