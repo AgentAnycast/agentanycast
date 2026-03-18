@@ -183,12 +183,22 @@ AgentAnycast uses a **sidecar architecture** with four components:
 | HTTP Bridge (P2P ↔ HTTP A2A interop)             | v0.3   |
 | DHT-based agent discovery                        | v0.3   |
 
+## Documentation
+
+| Guide | Description |
+|---|---|
+| **[Getting Started](docs/getting-started.md)** | Installation, first agent, mDNS vs relay |
+| **[Architecture](docs/architecture.md)** | Sidecar model, data flow, security, NAT traversal |
+| **[Python SDK Reference](docs/python-sdk.md)** | Complete API documentation |
+| **[Deployment](docs/deployment.md)** | Production relay setup, configuration, security |
+| **[Protocol Reference](docs/protocol.md)** | A2A envelope format, task lifecycle, gRPC service |
+| **[Examples](docs/examples.md)** | Multi-skill agents, error handling, LLM integration |
+
 ## Contributing
 
 We welcome contributions! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
-- **Proto & Python SDK** — Apache 2.0, [DCO sign-off](https://developercertificate.org/) required
-- **Node & Relay** — FSL 1.1, [CLA](CLA.md) signature required
+All repositories require a [CLA](CLA.md) signature — a bot will guide you on your first PR.
 
 ## License
 

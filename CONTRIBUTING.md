@@ -27,27 +27,11 @@ AgentAnycast is organized as multiple repositories. Choose the one that matches 
 5. **Test** — Ensure all existing tests pass and add tests for new functionality.
 6. **Submit a PR** — Open a pull request with a clear description of your changes.
 
-## Licensing & Contributor Agreements
+## Contributor License Agreement (CLA)
 
-Different repositories have different requirements:
+All repositories under the AgentAnycast organization require a **Contributor License Agreement (CLA)**. A CLA bot will automatically ask you to sign the CLA when you open your first pull request. You only need to sign once — it covers all repositories in the organization.
 
-### Apache 2.0 Repositories (proto, python, docs)
-
-These repositories use **DCO (Developer Certificate of Origin)**. Sign off your commits:
-
-```bash
-git commit -s -m "feat: add new feature"
-```
-
-This adds a `Signed-off-by` line certifying you have the right to submit the code under the project's license. See [developercertificate.org](https://developercertificate.org/).
-
-### FSL 1.1 Repositories (node, relay)
-
-These repositories require a **Contributor License Agreement (CLA)**. A CLA bot will guide you through the signing process when you open your first PR.
-
-The CLA is needed because:
-- These components use FSL 1.1 (auto-converting to Apache 2.0 after 2 years)
-- The CLA ensures the project maintainers can continue to offer dual-licensing
+The CLA ensures the project maintainers can continue to distribute, relicense, and offer all components under their current or future license terms. You can read the full CLA at [CLA.md](CLA.md).
 
 ## Coding Standards
 

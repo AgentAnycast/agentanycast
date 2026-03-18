@@ -8,12 +8,10 @@ to the license terms below. This license is for your protection as a Contributor
 as well as the protection of the Project and its users; it does not change your
 rights to use your own Contributions for any other purpose.
 
-This CLA is required for contributions to repositories licensed under the
-Functional Source License (FSL-1.1-Apache-2.0): **agentanycast-node** and
-**agentanycast-relay**. It ensures the Project maintainers can continue to
-distribute these components under their current license terms. For repositories
-licensed under Apache 2.0 (agentanycast-proto, agentanycast-python), only a
-[DCO sign-off](https://developercertificate.org/) is required.
+This CLA is required for contributions to **all repositories** under the
+[AgentAnycast](https://github.com/AgentAnycast) organization. It ensures the
+Project maintainers can continue to distribute all components under their
+current or future license terms.
 
 A CLA bot will automatically ask you to sign the CLA when you open your first
 pull request.
@@ -56,7 +54,12 @@ reserve all right, title, and interest in and to Your Contributions.
    works of, publicly display, publicly perform, sublicense, and distribute Your
    Contributions and such derivative works.
 
-3. **Grant of Patent License.** Subject to the terms and conditions of this
+3. **Relicensing.** The Project may relicense Your Contributions under any
+   license terms, including without limitation, any open source license or
+   commercial license, provided that any such relicensing does not remove Your
+   right to continue using Your Contributions under the terms of this Agreement.
+
+4. **Grant of Patent License.** Subject to the terms and conditions of this
    Agreement, You hereby grant to the Project and to recipients of software
    distributed by the Project a perpetual, worldwide, non-exclusive, no-charge,
    royalty-free, irrevocable (except as stated in this section) patent license to
@@ -71,21 +74,21 @@ reserve all right, title, and interest in and to Your Contributions.
    to that entity under this Agreement for that Contribution or Work shall
    terminate as of the date such litigation is filed.
 
-4. You represent that you are legally entitled to grant the above license. If
+5. You represent that you are legally entitled to grant the above license. If
    your employer(s) has rights to intellectual property that you create that
    includes your Contributions, you represent that you have received permission
    to make Contributions on behalf of that employer, that your employer has
    waived such rights for your Contributions to the Project, or that your
    employer has executed a separate Corporate CLA with the Project.
 
-5. You represent that each of Your Contributions is Your original creation (see
-   section 7 for submissions on behalf of others). You represent that Your
+6. You represent that each of Your Contributions is Your original creation (see
+   section 8 for submissions on behalf of others). You represent that Your
    Contribution submissions include complete details of any third-party license
    or other restriction (including, but not limited to, related patents and
    trademarks) of which you are personally aware and which are associated with
    any part of Your Contributions.
 
-6. You are not expected to provide support for Your Contributions, except to the
+7. You are not expected to provide support for Your Contributions, except to the
    extent You desire to provide support. You may provide support for free, for a
    fee, or not at all. Unless required by applicable law or agreed to in
    writing, You provide Your Contributions on an "AS IS" BASIS, WITHOUT
@@ -93,14 +96,14 @@ reserve all right, title, and interest in and to Your Contributions.
    without limitation, any warranties or conditions of TITLE, NON-INFRINGEMENT,
    MERCHANTABILITY, or FITNESS FOR A PARTICULAR PURPOSE.
 
-7. Should You wish to submit work that is not Your original creation, You may
+8. Should You wish to submit work that is not Your original creation, You may
    submit it to the Project separately from any Contribution, identifying the
    complete details of its source and of any license or other restriction
    (including, but not limited to, related patents, trademarks, and license
    agreements) of which you are personally aware, and conspicuously marking the
    work as "Submitted on behalf of a third-party: [named here]".
 
-8. You agree to notify the Project of any facts or circumstances of which you
+9. You agree to notify the Project of any facts or circumstances of which you
    become aware that would make these representations inaccurate in any respect.
 
 ---
