@@ -1,0 +1,89 @@
+# Docker Compose for AgentAnycast integration / E2E tests.
+#
+# Usage (from the tests/ directory):
+#   docker compose -f docker-compose.test.yml up --build --abort-on-container-exit
+#
+# This spins up:
+#   1. A relay server (bootstrap + skill registry)
+#   2. Two agent daemon nodes connected to the relay
+#   3. A test-runner container that runs pytest against the live daemons
+#
+# Note: Build contexts use the parent directory (../..) so that Go modules
+# can resolve their `replace` directives to ../agentanycast-proto.
+
+services:
+  # ── Relay (bootstrap + registry) ───────────────────────────
+  relay:
+    build:
+      context: ../..
+      dockerfile: agentanycast-relay/Dockerfile.integration
+    command:
+      - --listen
+      - /ip4/0.0.0.0/tcp/4001
+      - --registry-listen
+      - "0.0.0.0:50052"
+      - --registry-ttl
+      - "30s"
+      - --log-level
+      - info
+    healthcheck:
+      test: ["CMD-SHELL", "nc -z 127.0.0.1 50052 || exit 1"]
+      interval: 2s
+      timeout: 5s
+      retries: 10
+
+  # ── Node A ─────────────────────────────────────────────────
+  node-a:
+    build:
+      context: ../..
+      dockerfile: agentanycast-node/Dockerfile.integration
+    command:
+      - --grpc-listen
+      - tcp://0.0.0.0:50051
+      - --log-level
+      - info
+      - --bridge-listen
+      - ":8080"
+    environment:
+      - AGENTANYCAST_ENABLE_MDNS=false
+      - AGENTANYCAST_STORE_PATH=/data/store
+    depends_on:
+      relay:
+        condition: service_healthy
+
+  # ── Node B ─────────────────────────────────────────────────
+  node-b:
+    build:
+      context: ../..
+      dockerfile: agentanycast-node/Dockerfile.integration
+    command:
+      - --grpc-listen
+      - tcp://0.0.0.0:50051
+      - --log-level
+      - info
+    environment:
+      - AGENTANYCAST_ENABLE_MDNS=false
+      - AGENTANYCAST_STORE_PATH=/data/store
+    depends_on:
+      relay:
+        condition: service_healthy
+
+  # ── Test Runner ────────────────────────────────────────────
+  test-runner:
+    build:
+      context: ../../agentanycast-python
+      dockerfile: Dockerfile.test
+    environment:
+      - NODE_A_GRPC=node-a:50051
+      - NODE_B_GRPC=node-b:50051
+      - RELAY_REGISTRY=relay:50052
+    depends_on:
+      relay:
+        condition: service_healthy
+      node-a:
+        condition: service_started
+      node-b:
+        condition: service_started
+    # Give daemons time to bootstrap before running tests.
+    command: >
+      sh -c "sleep 5 && pytest tests/integration/ -m integration -v --tb=short"
