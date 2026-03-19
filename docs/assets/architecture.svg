@@ -1,0 +1,118 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 520" font-family="system-ui, -apple-system, sans-serif" font-size="13">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0f172a;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#1e293b;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="nodeGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#3b82f6;stop-opacity:0.15" />
+      <stop offset="100%" style="stop-color:#3b82f6;stop-opacity:0.05" />
+    </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="2" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="900" height="520" rx="12" fill="url(#bgGrad)"/>
+
+  <!-- Title -->
+  <text x="450" y="36" fill="#f8fafc" font-size="18" font-weight="700" text-anchor="middle">AgentAnycast — Sidecar Architecture</text>
+
+  <!-- ═══ LEFT: Agent A ═══ -->
+  <!-- App Layer -->
+  <rect x="40" y="70" width="200" height="60" rx="8" fill="#7c3aed" fill-opacity="0.2" stroke="#7c3aed" stroke-width="1.5"/>
+  <text x="140" y="96" fill="#c4b5fd" font-weight="600" text-anchor="middle">Your App (Agent A)</text>
+  <text x="140" y="114" fill="#94a3b8" font-size="11" text-anchor="middle">Python or TypeScript</text>
+
+  <!-- gRPC arrow -->
+  <line x1="140" y1="130" x2="140" y2="160" stroke="#64748b" stroke-width="1.5" stroke-dasharray="4,3"/>
+  <text x="170" y="150" fill="#64748b" font-size="10">gRPC</text>
+
+  <!-- Daemon Layer -->
+  <rect x="20" y="160" width="240" height="170" rx="8" fill="url(#nodeGrad)" stroke="#3b82f6" stroke-width="1.5"/>
+  <text x="140" y="185" fill="#93c5fd" font-weight="700" text-anchor="middle" font-size="14">agentanycastd</text>
+  <text x="140" y="202" fill="#64748b" font-size="10" text-anchor="middle">Go daemon — auto-managed by SDK</text>
+
+  <!-- Daemon internals -->
+  <rect x="35" y="215" width="95" height="28" rx="5" fill="#1e40af" fill-opacity="0.3" stroke="#3b82f6" stroke-width="0.8"/>
+  <text x="82" y="234" fill="#93c5fd" font-size="10" text-anchor="middle">Noise_XX E2E</text>
+
+  <rect x="140" y="215" width="105" height="28" rx="5" fill="#1e40af" fill-opacity="0.3" stroke="#3b82f6" stroke-width="0.8"/>
+  <text x="192" y="234" fill="#93c5fd" font-size="10" text-anchor="middle">NAT Traversal</text>
+
+  <rect x="35" y="252" width="95" height="28" rx="5" fill="#1e40af" fill-opacity="0.3" stroke="#3b82f6" stroke-width="0.8"/>
+  <text x="82" y="271" fill="#93c5fd" font-size="10" text-anchor="middle">A2A Engine</text>
+
+  <rect x="140" y="252" width="105" height="28" rx="5" fill="#1e40af" fill-opacity="0.3" stroke="#3b82f6" stroke-width="0.8"/>
+  <text x="192" y="271" fill="#93c5fd" font-size="10" text-anchor="middle">Anycast Router</text>
+
+  <rect x="35" y="289" width="210" height="28" rx="5" fill="#7c3aed" fill-opacity="0.2" stroke="#7c3aed" stroke-width="0.8"/>
+  <text x="140" y="308" fill="#c4b5fd" font-size="10" text-anchor="middle">MCP Server (Claude / ChatGPT / Cursor)</text>
+
+  <!-- ═══ CENTER: Network ═══ -->
+  <!-- Network cloud -->
+  <ellipse cx="450" cy="250" rx="120" ry="55" fill="#059669" fill-opacity="0.08" stroke="#059669" stroke-width="1.5" stroke-dasharray="6,4"/>
+  <text x="450" y="238" fill="#6ee7b7" font-weight="600" text-anchor="middle" font-size="14">P2P Network</text>
+  <text x="450" y="258" fill="#64748b" font-size="10" text-anchor="middle">libp2p / TCP / QUIC</text>
+  <text x="450" y="273" fill="#64748b" font-size="10" text-anchor="middle">mDNS (LAN) / Relay (WAN)</text>
+
+  <!-- Encrypted connection lines -->
+  <line x1="260" y1="250" x2="330" y2="250" stroke="#10b981" stroke-width="2" filter="url(#glow)"/>
+  <line x1="570" y1="250" x2="640" y2="250" stroke="#10b981" stroke-width="2" filter="url(#glow)"/>
+
+  <!-- Lock icons (text) -->
+  <text x="295" y="242" fill="#10b981" font-size="14">🔒</text>
+  <text x="595" y="242" fill="#10b981" font-size="14">🔒</text>
+
+  <!-- ═══ RIGHT: Agent B ═══ -->
+  <!-- App Layer -->
+  <rect x="660" y="70" width="200" height="60" rx="8" fill="#7c3aed" fill-opacity="0.2" stroke="#7c3aed" stroke-width="1.5"/>
+  <text x="760" y="96" fill="#c4b5fd" font-weight="600" text-anchor="middle">Your App (Agent B)</text>
+  <text x="760" y="114" fill="#94a3b8" font-size="11" text-anchor="middle">Python or TypeScript</text>
+
+  <!-- gRPC arrow -->
+  <line x1="760" y1="130" x2="760" y2="160" stroke="#64748b" stroke-width="1.5" stroke-dasharray="4,3"/>
+  <text x="790" y="150" fill="#64748b" font-size="10">gRPC</text>
+
+  <!-- Daemon Layer -->
+  <rect x="640" y="160" width="240" height="170" rx="8" fill="url(#nodeGrad)" stroke="#3b82f6" stroke-width="1.5"/>
+  <text x="760" y="185" fill="#93c5fd" font-weight="700" text-anchor="middle" font-size="14">agentanycastd</text>
+  <text x="760" y="202" fill="#64748b" font-size="10" text-anchor="middle">Go daemon — auto-managed by SDK</text>
+
+  <rect x="655" y="215" width="95" height="28" rx="5" fill="#1e40af" fill-opacity="0.3" stroke="#3b82f6" stroke-width="0.8"/>
+  <text x="702" y="234" fill="#93c5fd" font-size="10" text-anchor="middle">Noise_XX E2E</text>
+
+  <rect x="760" y="215" width="105" height="28" rx="5" fill="#1e40af" fill-opacity="0.3" stroke="#3b82f6" stroke-width="0.8"/>
+  <text x="812" y="234" fill="#93c5fd" font-size="10" text-anchor="middle">NAT Traversal</text>
+
+  <rect x="655" y="252" width="95" height="28" rx="5" fill="#1e40af" fill-opacity="0.3" stroke="#3b82f6" stroke-width="0.8"/>
+  <text x="702" y="271" fill="#93c5fd" font-size="10" text-anchor="middle">A2A Engine</text>
+
+  <rect x="760" y="252" width="105" height="28" rx="5" fill="#1e40af" fill-opacity="0.3" stroke="#3b82f6" stroke-width="0.8"/>
+  <text x="812" y="271" fill="#93c5fd" font-size="10" text-anchor="middle">Anycast Router</text>
+
+  <rect x="655" y="289" width="210" height="28" rx="5" fill="#7c3aed" fill-opacity="0.2" stroke="#7c3aed" stroke-width="0.8"/>
+  <text x="760" y="308" fill="#c4b5fd" font-size="10" text-anchor="middle">MCP Server (Claude / ChatGPT / Cursor)</text>
+
+  <!-- ═══ BOTTOM: Relay ═══ -->
+  <rect x="350" y="370" width="200" height="55" rx="8" fill="#f59e0b" fill-opacity="0.1" stroke="#f59e0b" stroke-width="1.5"/>
+  <text x="450" y="393" fill="#fcd34d" font-weight="600" text-anchor="middle">Relay Server</text>
+  <text x="450" y="410" fill="#64748b" font-size="10" text-anchor="middle">Ciphertext only — cannot read traffic</text>
+
+  <!-- Relay connections -->
+  <line x1="140" y1="330" x2="350" y2="385" stroke="#f59e0b" stroke-width="1" stroke-dasharray="4,3" stroke-opacity="0.5"/>
+  <line x1="760" y1="330" x2="550" y2="385" stroke="#f59e0b" stroke-width="1" stroke-dasharray="4,3" stroke-opacity="0.5"/>
+
+  <!-- ═══ BOTTOM: Integration Bar ═══ -->
+  <rect x="40" y="450" width="820" height="50" rx="8" fill="#1e293b" stroke="#334155" stroke-width="1"/>
+  <text x="450" y="471" fill="#94a3b8" font-size="11" text-anchor="middle">Works with:</text>
+  <text x="130" y="489" fill="#f8fafc" font-size="11" text-anchor="middle" font-weight="600">CrewAI</text>
+  <text x="240" y="489" fill="#f8fafc" font-size="11" text-anchor="middle" font-weight="600">LangGraph</text>
+  <text x="350" y="489" fill="#f8fafc" font-size="11" text-anchor="middle" font-weight="600">Claude Desktop</text>
+  <text x="470" y="489" fill="#f8fafc" font-size="11" text-anchor="middle" font-weight="600">ChatGPT</text>
+  <text x="570" y="489" fill="#f8fafc" font-size="11" text-anchor="middle" font-weight="600">Cursor</text>
+  <text x="660" y="489" fill="#f8fafc" font-size="11" text-anchor="middle" font-weight="600">VS Code</text>
+  <text x="770" y="489" fill="#f8fafc" font-size="11" text-anchor="middle" font-weight="600">Gemini CLI</text>
+</svg>

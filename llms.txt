@@ -1,0 +1,36 @@
+# AgentAnycast
+
+> P2P runtime for the A2A (Agent-to-Agent) protocol. Connect AI agents across any network with end-to-end encryption, NAT traversal, and zero configuration. Powered by libp2p.
+
+AgentAnycast makes the Google A2A protocol work without public IPs or VPNs. It provides a sidecar Go daemon that handles P2P networking (libp2p), encryption (Noise_XX), and NAT traversal, with thin SDK layers for Python and TypeScript.
+
+## Documentation
+
+- [Getting Started](https://github.com/AgentAnycast/agentanycast/blob/main/docs/getting-started.md): Install and run your first P2P agent in 5 minutes
+- [Architecture](https://github.com/AgentAnycast/agentanycast/blob/main/docs/architecture.md): Sidecar daemon + SDK design, security model, NAT traversal
+- [Python SDK Reference](https://github.com/AgentAnycast/agentanycast/blob/main/docs/python-sdk.md): Complete API docs — Node, AgentCard, Task, IncomingTask
+- [TypeScript SDK](https://github.com/AgentAnycast/agentanycast-ts): Node.js 18+ SDK with identical API
+- [Examples](https://github.com/AgentAnycast/agentanycast/blob/main/docs/examples.md): CrewAI, LangGraph, MCP tool mapping, streaming
+- [Protocol Reference](https://github.com/AgentAnycast/agentanycast/blob/main/docs/protocol.md): Wire format, task lifecycle, 16 gRPC RPCs
+- [Deployment](https://github.com/AgentAnycast/agentanycast/blob/main/docs/deployment.md): Relay setup, HTTP bridge, Prometheus metrics
+
+## Quick Install
+
+- Python: `pip install agentanycast`
+- TypeScript: `npm install agentanycast`
+
+## Key Concepts
+
+- **Three addressing modes**: Direct (peer_id), Anycast (skill), HTTP Bridge (url)
+- **Framework adapters**: `serve_crew()` for CrewAI, `serve_graph()` for LangGraph
+- **MCP bridging**: `mcpToolToSkill()` / `skillToMcpTool()` for MCP ↔ A2A interop
+- **DID identity**: `peer_id_to_did_key()` / `did_key_to_peer_id()` for W3C DID:key
+
+## Repositories
+
+- [agentanycast](https://github.com/AgentAnycast/agentanycast): Documentation hub
+- [agentanycast-python](https://github.com/AgentAnycast/agentanycast-python): Python SDK
+- [agentanycast-ts](https://github.com/AgentAnycast/agentanycast-ts): TypeScript SDK
+- [agentanycast-node](https://github.com/AgentAnycast/agentanycast-node): Go daemon
+- [agentanycast-relay](https://github.com/AgentAnycast/agentanycast-relay): Relay server
+- [agentanycast-proto](https://github.com/AgentAnycast/agentanycast-proto): Protobuf definitions

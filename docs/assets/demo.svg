@@ -1,0 +1,86 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 820 520" font-family="'SF Mono', 'Menlo', 'Monaco', 'Cascadia Code', monospace" font-size="13">
+  <style>
+    @keyframes typeLine1 { from { opacity: 0 } to { opacity: 1 } }
+    @keyframes typeLine2 { from { opacity: 0 } to { opacity: 1 } }
+    @keyframes typeLine3 { from { opacity: 0 } to { opacity: 1 } }
+    @keyframes cursor { 0%,100% { opacity: 1 } 50% { opacity: 0 } }
+    .line1 { animation: typeLine1 0.3s ease-out 0.5s both; }
+    .line2 { animation: typeLine2 0.3s ease-out 1.2s both; }
+    .line3 { animation: typeLine3 0.3s ease-out 1.5s both; }
+    .output1 { animation: typeLine1 0.2s ease-out 1.8s both; }
+    .output2 { animation: typeLine2 0.2s ease-out 2.0s both; }
+    .output3 { animation: typeLine3 0.2s ease-out 2.2s both; }
+    .output4 { animation: typeLine1 0.2s ease-out 2.4s both; }
+    .output5 { animation: typeLine2 0.2s ease-out 2.6s both; }
+    .t2cmd { animation: typeLine1 0.3s ease-out 3.2s both; }
+    .t2out1 { animation: typeLine2 0.2s ease-out 3.8s both; }
+    .t2out2 { animation: typeLine3 0.2s ease-out 4.2s both; }
+    .t2out3 { animation: typeLine1 0.2s ease-out 4.6s both; }
+  </style>
+
+  <!-- Terminal window -->
+  <rect width="820" height="520" rx="10" fill="#1a1b26"/>
+
+  <!-- Title bar -->
+  <rect width="820" height="36" rx="10" fill="#24283b"/>
+  <rect y="26" width="820" height="10" fill="#24283b"/>
+  <circle cx="20" cy="18" r="6" fill="#ff5f57"/>
+  <circle cx="40" cy="18" r="6" fill="#febc2e"/>
+  <circle cx="60" cy="18" r="6" fill="#28c840"/>
+  <text x="410" y="22" fill="#565f89" font-size="12" text-anchor="middle">Terminal 1 — Echo Agent</text>
+
+  <!-- Terminal 1 content -->
+  <g transform="translate(16, 52)">
+    <!-- Prompt + command -->
+    <text y="0" class="line1">
+      <tspan fill="#7aa2f7">$</tspan>
+      <tspan fill="#c0caf5"> pip install agentanycast</tspan>
+    </text>
+
+    <text y="22" class="line2">
+      <tspan fill="#7aa2f7">$</tspan>
+      <tspan fill="#c0caf5"> agentanycast demo</tspan>
+    </text>
+
+    <!-- Demo output -->
+    <text y="52" class="output1" fill="#9ece6a">Echo agent started. PeerID: 12D3KooWAXE5BWmY...4iJs</text>
+    <text y="72" class="output2" fill="#565f89">Waiting for incoming tasks... (Ctrl+C to stop)</text>
+
+    <text y="102" class="output3" fill="#bb9af7">Received task abc123: "Hello from Agent B!"</text>
+    <text y="122" class="output4" fill="#9ece6a">  Replied: "Echo: Hello from Agent B!"</text>
+    <text y="152" class="output5" fill="#bb9af7">Received task def456: "Translate this to French"</text>
+  </g>
+
+  <!-- Divider -->
+  <line x1="0" y1="260" x2="820" y2="260" stroke="#3b4261" stroke-width="1"/>
+
+  <!-- Title bar 2 -->
+  <rect y="260" width="820" height="30" fill="#24283b"/>
+  <text x="410" y="280" fill="#565f89" font-size="12" text-anchor="middle">Terminal 2 — Send Task</text>
+
+  <!-- Terminal 2 content -->
+  <g transform="translate(16, 306)">
+    <text y="0" class="t2cmd">
+      <tspan fill="#7aa2f7">$</tspan>
+      <tspan fill="#c0caf5"> agentanycast send 12D3KooWAXE5BWmY...4iJs "Hello from Agent B!"</tspan>
+    </text>
+
+    <text y="30" class="t2out1">
+      <tspan fill="#565f89">Sending task to 12D3KooWAXE5BWmY...4iJs...</tspan>
+    </text>
+    <text y="50" class="t2out2">
+      <tspan fill="#9ece6a">Task abc123 completed (status: completed)</tspan>
+    </text>
+    <text y="70" class="t2out3">
+      <tspan fill="#c0caf5">  Artifact: echo</tspan>
+    </text>
+    <text y="90" class="t2out3">
+      <tspan fill="#7dcfff">    Echo: Hello from Agent B!</tspan>
+    </text>
+
+    <!-- Info box -->
+    <rect y="120" width="788" height="60" rx="6" fill="#1e40af" fill-opacity="0.15" stroke="#3b82f6" stroke-width="0.8"/>
+    <text y="142" fill="#7aa2f7" font-size="12">  Zero configuration. End-to-end encrypted (Noise_XX).</text>
+    <text y="160" fill="#7aa2f7" font-size="12">  No public IP. No VPN. No certificates. Just works.</text>
+  </g>
+</svg>

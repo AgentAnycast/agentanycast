@@ -1,0 +1,49 @@
+# AgentAnycast
+
+AgentAnycast is a decentralized P2P runtime for the A2A (Agent-to-Agent) protocol.
+
+## Architecture
+- Sidecar model: Go daemon (libp2p) handles P2P networking, Python/TypeScript SDKs communicate via gRPC over Unix socket
+- Security: Noise_XX end-to-end encryption, Ed25519 keys, DID:key identity
+- NAT traversal: AutoNAT + DCUtR + Circuit Relay v2
+- Discovery: DHT (Kademlia) + Relay skill registry
+
+## Quick Usage
+
+Python:
+```python
+from agentanycast import Node, AgentCard, Skill
+
+card = AgentCard(name="MyAgent", skills=[Skill(id="echo", description="Echo")])
+async with Node(card=card) as node:
+    @node.on_task
+    async def handle(task):
+        await task.complete(artifacts=[{"parts": [{"text": "Hello!"}]}])
+    await node.serve_forever()
+```
+
+TypeScript:
+```typescript
+import { Node } from "agentanycast";
+const node = new Node({ card: { name: "MyAgent", skills: [{ id: "echo", description: "Echo" }] } });
+await node.start();
+node.onTask(async (task) => { await task.complete([{ parts: [{ text: "Hello!" }] }]); });
+await node.serveForever();
+```
+
+## Three addressing modes
+- `peer_id="12D3KooW..."` — direct P2P
+- `skill="translate"` — anycast routing by capability
+- `url="https://..."` — HTTP bridge to standard A2A agents
+
+## Framework adapters
+- CrewAI: `from agentanycast.adapters.crewai import serve_crew`
+- LangGraph: `from agentanycast.adapters.langgraph import serve_graph`
+- MCP: `from agentanycast.mcp import mcpToolToSkill, skillToMcpTool`
+
+## Repos
+- agentanycast-python: Python SDK (pip install agentanycast)
+- agentanycast-ts: TypeScript SDK (npm install agentanycast)
+- agentanycast-node: Go daemon
+- agentanycast-relay: Relay server
+- agentanycast-proto: Protobuf definitions
