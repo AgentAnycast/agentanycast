@@ -1,36 +1,162 @@
 # AgentAnycast
 
-> P2P runtime for the A2A (Agent-to-Agent) protocol. Connect AI agents across any network with end-to-end encryption, NAT traversal, and zero configuration. Powered by libp2p.
+> Decentralized P2P runtime for the A2A (Agent-to-Agent) protocol. Connect AI agents across any network with end-to-end encryption, NAT traversal, and zero configuration.
 
-AgentAnycast makes the Google A2A protocol work without public IPs or VPNs. It provides a sidecar Go daemon that handles P2P networking (libp2p), encryption (Noise_XX), and NAT traversal, with thin SDK layers for Python and TypeScript.
+## When to Use AgentAnycast
 
-## Documentation
+Use AgentAnycast when you need agents to communicate without deploying public HTTP servers:
+- Multi-agent systems across different networks (home, office, cloud) without VPNs
+- Private agent-to-agent communication with end-to-end encryption (Noise_XX)
+- Skill-based agent discovery and routing (anycast)
+- Bridging MCP tools and A2A agents bidirectionally
+- Wrapping CrewAI crews, LangGraph graphs, Google ADK agents, or OpenAI Agents as P2P services
+- Interoperating with HTTP-based A2A agents via the built-in HTTP Bridge
 
-- [Getting Started](https://github.com/AgentAnycast/agentanycast/blob/main/docs/getting-started.md): Install and run your first P2P agent in 5 minutes
-- [Architecture](https://github.com/AgentAnycast/agentanycast/blob/main/docs/architecture.md): Sidecar daemon + SDK design, security model, NAT traversal
-- [Python SDK Reference](https://github.com/AgentAnycast/agentanycast/blob/main/docs/python-sdk.md): Complete API docs — Node, AgentCard, Task, IncomingTask
-- [TypeScript SDK](https://github.com/AgentAnycast/agentanycast-ts): Node.js 18+ SDK with identical API
-- [Examples](https://github.com/AgentAnycast/agentanycast/blob/main/docs/examples.md): CrewAI, LangGraph, MCP tool mapping, streaming
-- [Protocol Reference](https://github.com/AgentAnycast/agentanycast/blob/main/docs/protocol.md): Wire format, task lifecycle, 16 gRPC RPCs
-- [Deployment](https://github.com/AgentAnycast/agentanycast/blob/main/docs/deployment.md): Relay setup, HTTP bridge, Prometheus metrics
+## Install
 
-## Quick Install
+```bash
+pip install agentanycast                 # Python SDK
+pip install agentanycast[crewai]         # + CrewAI adapter
+pip install agentanycast[langgraph]      # + LangGraph adapter
+pip install agentanycast[adk]            # + Google ADK adapter
+pip install agentanycast[openai-agents]  # + OpenAI Agents adapter
 
-- Python: `pip install agentanycast`
-- TypeScript: `npm install agentanycast`
+npm install agentanycast                 # TypeScript SDK
+```
 
-## Key Concepts
+The Go daemon binary is auto-downloaded on first run (Python) or postinstall (TypeScript).
 
-- **Three addressing modes**: Direct (peer_id), Anycast (skill), HTTP Bridge (url)
-- **Framework adapters**: `serve_crew()` for CrewAI, `serve_graph()` for LangGraph
-- **MCP bridging**: `mcpToolToSkill()` / `skillToMcpTool()` for MCP ↔ A2A interop
-- **DID identity**: `peer_id_to_did_key()` / `did_key_to_peer_id()` for W3C DID:key
+## Quick Start — Python
+
+```python
+import asyncio
+from agentanycast import Node, AgentCard, Skill
+
+card = AgentCard(name="Echo", skills=[Skill(id="echo", description="Echo back messages")])
+
+async def main():
+    async with Node(card=card) as node:
+        @node.on_task
+        async def handle(task):
+            text = task.messages[-1].parts[0].text
+            await task.complete(artifacts=[{"parts": [{"text": f"Echo: {text}"}]}])
+        await node.serve_forever()
+
+asyncio.run(main())
+```
+
+## Quick Start — TypeScript
+
+```typescript
+import { Node } from "agentanycast";
+
+const node = new Node({
+  card: { name: "Echo", skills: [{ id: "echo", description: "Echo back messages" }] },
+});
+await node.start();
+node.onTask(async (task) => {
+  const text = task.messages.at(-1)?.parts[0]?.text ?? "";
+  await task.complete([{ parts: [{ text: `Echo: ${text}` }] }]);
+});
+await node.serveForever();
+```
+
+## Three Addressing Modes
+
+```python
+# Direct — send to a known peer by libp2p PeerID
+result = await node.send_task({"role": "user", "parts": [{"text": "Hello"}]}, peer_id="12D3KooW...")
+
+# Anycast — discover and route by skill (queries relay registry)
+result = await node.send_task({"role": "user", "parts": [{"text": "Hello"}]}, skill="translate")
+
+# HTTP Bridge — interop with standard HTTP-based A2A agents
+result = await node.send_task({"role": "user", "parts": [{"text": "Hello"}]}, url="https://agent.example.com")
+```
+
+```typescript
+await node.sendTask({ role: "user", parts: [{ text: "Hello" }] }, { peerId: "12D3KooW..." });
+await node.sendTask({ role: "user", parts: [{ text: "Hello" }] }, { skill: "translate" });
+await node.sendTask({ role: "user", parts: [{ text: "Hello" }] }, { url: "https://agent.example.com" });
+```
+
+## Framework Adapters (Python)
+
+```python
+# CrewAI — pip install agentanycast[crewai]
+from agentanycast.adapters.crewai import serve_crew
+await serve_crew(crew, card=card, relay="/ip4/.../p2p/12D3KooW...")
+
+# LangGraph — pip install agentanycast[langgraph]
+from agentanycast.adapters.langgraph import serve_graph
+await serve_graph(compiled_graph, card=card, relay="/ip4/.../p2p/12D3KooW...")
+
+# Google ADK — pip install agentanycast[adk]
+from agentanycast.adapters.adk import serve_adk_agent
+await serve_adk_agent(agent, card=card, relay="/ip4/.../p2p/12D3KooW...")
+
+# OpenAI Agents — pip install agentanycast[openai-agents]
+from agentanycast.adapters.openai_agents import serve_openai_agent
+await serve_openai_agent(agent, card=card, relay="/ip4/.../p2p/12D3KooW...")
+```
+
+## MCP Bridging
+
+Convert between MCP Tool definitions and A2A Skills:
+
+```python
+from agentanycast import mcp_tool_to_skill, skill_to_mcp_tool, mcp_tools_to_agent_card, MCPTool
+
+tool = MCPTool(name="get_weather", description="Get weather", input_schema={"type": "object"})
+skill = mcp_tool_to_skill(tool)        # MCPTool -> Skill
+tool = skill_to_mcp_tool(skill)        # Skill -> MCPTool
+card = mcp_tools_to_agent_card("WeatherServer", [tool])  # Wrap MCP server as A2A agent
+```
+
+```typescript
+import { mcpToolToSkill, skillToMcpTool, mcpToolsToAgentCard } from "agentanycast";
+
+const skill = mcpToolToSkill({ name: "get_weather", description: "Get weather" });
+const card = mcpToolsToAgentCard("WeatherServer", [tool]);
+```
+
+## DID Identity
+
+```python
+from agentanycast import peer_id_to_did_key, did_key_to_peer_id
+did = peer_id_to_did_key("12D3KooW...")      # -> "did:key:z6Mk..."
+peer_id = did_key_to_peer_id("did:key:z6Mk...")  # -> "12D3KooW..."
+```
+
+## CLI (Python)
+
+```bash
+agentanycast demo                    # Start an echo agent
+agentanycast discover <skill>        # Find agents by skill
+agentanycast send <target> "msg"     # Send task to peer/skill/URL
+agentanycast status                  # Daemon status
+agentanycast info                    # Node info (PeerID, DID, addresses)
+```
+
+## Architecture
+
+Sidecar pattern: a Go daemon handles P2P networking (libp2p), encryption (Noise_XX), NAT traversal (AutoNAT + DCUtR + Circuit Relay v2), and A2A protocol logic. Thin Python/TypeScript SDKs communicate with the daemon via gRPC over a Unix domain socket.
+
+Security: all peer connections use Noise_XX authenticated encryption. Each node has an Ed25519 identity key that maps to both a libp2p PeerID and a W3C DID:key.
+
+## Why P2P vs HTTP-only A2A
+
+- No public IP or domain required — works behind NAT, firewalls, home networks
+- End-to-end encryption by default — no TLS termination at load balancers
+- Agents are location-independent — same PeerID regardless of IP changes
+- Anycast routing by skill — no service registry infrastructure needed
+- HTTP Bridge ensures full interop with the standard A2A ecosystem
 
 ## Repositories
 
-- [agentanycast](https://github.com/AgentAnycast/agentanycast): Documentation hub
-- [agentanycast-python](https://github.com/AgentAnycast/agentanycast-python): Python SDK
-- [agentanycast-ts](https://github.com/AgentAnycast/agentanycast-ts): TypeScript SDK
-- [agentanycast-node](https://github.com/AgentAnycast/agentanycast-node): Go daemon
-- [agentanycast-relay](https://github.com/AgentAnycast/agentanycast-relay): Relay server
-- [agentanycast-proto](https://github.com/AgentAnycast/agentanycast-proto): Protobuf definitions
+- [agentanycast](https://github.com/AgentAnycast/agentanycast) — Docs and issue tracker
+- [agentanycast-python](https://github.com/AgentAnycast/agentanycast-python) — Python SDK (`pip install agentanycast`)
+- [agentanycast-ts](https://github.com/AgentAnycast/agentanycast-ts) — TypeScript SDK (`npm install agentanycast`)
+- [agentanycast-node](https://github.com/AgentAnycast/agentanycast-node) — Go daemon (agentanycastd)
+- [agentanycast-relay](https://github.com/AgentAnycast/agentanycast-relay) — Relay server (Circuit Relay v2 + skill registry)
+- [agentanycast-proto](https://github.com/AgentAnycast/agentanycast-proto) — Protobuf/gRPC definitions

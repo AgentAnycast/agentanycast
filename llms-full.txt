@@ -1,0 +1,506 @@
+# AgentAnycast — Full Reference
+
+> Decentralized P2P runtime for the A2A (Agent-to-Agent) protocol. End-to-end encrypted agent communication with NAT traversal, anycast routing, and zero configuration.
+
+## Architecture Overview
+
+AgentAnycast uses a **sidecar architecture**: a Go daemon (`agentanycastd`) handles all P2P networking, while thin Python and TypeScript SDKs communicate with the daemon over gRPC via a Unix domain socket.
+
+```
+App (Python/TS) --> SDK --> gRPC (Unix socket) --> agentanycastd --> libp2p --> Remote peer
+```
+
+Data flow for send_task:
+1. App calls `node.send_task()` (Python) or `node.sendTask()` (TypeScript)
+2. SDK sends gRPC `SendTask` request over Unix domain socket
+3. Daemon serializes as A2AEnvelope, sends over libp2p stream (`/agentanycast/a2a/1.0`)
+4. Remote daemon receives, delivers to its SDK via gRPC streaming (`SubscribeIncomingTasks`)
+5. Remote app's task handler processes the task and responds
+
+The daemon manages: libp2p host, Noise_XX encryption, NAT traversal, peer connections, task state machine, offline message queue, BoltDB persistence, HTTP bridge, and MCP server.
+
+## Repository Structure
+
+| Repo | Language | Purpose |
+|------|----------|---------|
+| agentanycast | Docs | Main entry, docs, issue tracker |
+| agentanycast-python | Python | SDK: `pip install agentanycast` |
+| agentanycast-ts | TypeScript | SDK: `npm install agentanycast` |
+| agentanycast-node | Go | Core daemon (agentanycastd) |
+| agentanycast-relay | Go | Relay server + skill registry |
+| agentanycast-proto | Protobuf | gRPC interface definitions |
+
+Dependency flow: proto -> node/relay (Go import), proto -> python/ts (generated stubs committed).
+
+## Python SDK API
+
+### Installation
+
+```bash
+pip install agentanycast               # Core
+pip install agentanycast[crewai]       # + CrewAI adapter
+pip install agentanycast[langgraph]    # + LangGraph adapter
+pip install agentanycast[adk]          # + Google ADK adapter
+pip install agentanycast[openai-agents] # + OpenAI Agents adapter
+pip install agentanycast[adapters]     # All adapters
+```
+
+### Node Class
+
+```python
+from agentanycast import Node, AgentCard, Skill
+
+card = AgentCard(
+    name="MyAgent",
+    description="Description",
+    version="1.0.0",
+    skills=[Skill(id="echo", description="Echo service", input_schema="...", output_schema="...")],
+)
+
+# Constructor parameters:
+# card: AgentCard (required)
+# relay: str | None — relay multiaddr for cross-network
+# key_path: str | Path | None — Ed25519 key file
+# daemon_addr: str | None — connect to existing daemon
+# daemon_bin: str | Path | None — custom daemon binary
+# daemon_path: str | Path | None — alias for daemon_bin
+# home: str | Path | None — data directory
+
+async with Node(card=card, relay="/ip4/.../p2p/12D3KooW...") as node:
+    print(node.peer_id)   # libp2p PeerID
+    print(peer_id_to_did_key(node.peer_id))  # W3C DID:key
+
+    @node.on_task
+    async def handle(task):
+        # task is IncomingTask
+        await task.complete(artifacts=[{"parts": [{"text": "result"}]}])
+
+    await node.serve_forever()
+```
+
+### send_task — Three Addressing Modes
+
+```python
+msg = {"role": "user", "parts": [{"text": "Hello"}]}
+# Or: msg = Message(role="user", parts=[Part(text="Hello")])
+
+# Direct (peer_id) — send to known peer
+handle = await node.send_task(msg, peer_id="12D3KooW...")
+
+# Anycast (skill) — route by capability via relay registry
+handle = await node.send_task(msg, skill="translate")
+
+# HTTP Bridge (url) — interop with HTTP A2A agents
+handle = await node.send_task(msg, url="https://agent.example.com")
+
+# Optional metadata:
+handle = await node.send_task(msg, skill="translate", metadata={"priority": "high"})
+```
+
+### TaskHandle (Client-Side)
+
+```python
+handle = await node.send_task(msg, skill="translate")
+result = await handle.wait()                    # Block until terminal
+result = await handle.wait(timeout=30.0)        # With timeout
+print(handle.status)                            # TaskStatus enum
+print(handle.task_id)                           # Task identifier
+print(handle.artifacts[0].parts[0].text)        # Access result
+await handle.cancel()                           # Cancel task
+```
+
+### IncomingTask (Server-Side)
+
+```python
+@node.on_task
+async def handle(task):
+    # Properties
+    task.task_id            # str
+    task.peer_id            # originator PeerID
+    task.messages           # list[Message]
+    task.target_skill_id    # which skill was requested
+    task.sender_card        # AgentCard of sender (if available)
+
+    # Methods
+    await task.update_status("working")
+    await task.complete(artifacts=[{"parts": [{"text": "result"}]}])
+    await task.fail("error description")
+    await task.request_input(message={"role": "agent", "parts": [{"text": "Need more info"}]})
+```
+
+### Discovery
+
+```python
+agents = await node.discover("translate", tags={"lang": "en"}, limit=10)
+# Returns list[dict] with keys: peer_id, agent_name, agent_description, skills
+```
+
+### Framework Adapters
+
+```python
+# CrewAI — pip install agentanycast[crewai]
+from agentanycast.adapters.crewai import serve_crew
+await serve_crew(crew, card=card, relay="...", key_path=None, home=None)
+
+# LangGraph — pip install agentanycast[langgraph]
+from agentanycast.adapters.langgraph import serve_graph
+await serve_graph(compiled_graph, card=card, relay="...", input_key="input")
+
+# Google ADK — pip install agentanycast[adk]
+from agentanycast.adapters.adk import serve_adk_agent
+await serve_adk_agent(agent, card=card, relay="...", app_name="agentanycast")
+
+# OpenAI Agents — pip install agentanycast[openai-agents]
+from agentanycast.adapters.openai_agents import serve_openai_agent
+await serve_openai_agent(agent, card=card, relay="...")
+```
+
+All adapters use BaseAdapter internally: translate IncomingTask messages into framework input, invoke the framework, return output as artifacts.
+
+### MCP Bridging
+
+```python
+from agentanycast import MCPTool, mcp_tool_to_skill, skill_to_mcp_tool, mcp_tools_to_agent_card
+
+tool = MCPTool(name="get_weather", description="Get weather", input_schema={"type": "object"})
+skill = mcp_tool_to_skill(tool)       # MCPTool -> Skill (name->id, description->description)
+tool = skill_to_mcp_tool(skill)       # Skill -> MCPTool
+card = mcp_tools_to_agent_card("Server", [tool1, tool2], description="...", version="1.0.0")
+```
+
+### DID Identity
+
+```python
+from agentanycast import peer_id_to_did_key, did_key_to_peer_id
+
+did = peer_id_to_did_key("12D3KooW...")          # -> "did:key:z6Mk..."
+peer_id = did_key_to_peer_id("did:key:z6Mk...")  # -> "12D3KooW..."
+```
+
+### CLI
+
+```bash
+agentanycast demo                    # Start echo agent
+agentanycast discover <skill>        # Find agents by skill
+agentanycast send <target> "msg"     # Send task (peer_id, skill, or URL)
+agentanycast status                  # Daemon status
+agentanycast info                    # Node info (PeerID, DID, addresses)
+```
+
+### Exception Hierarchy
+
+```
+AgentAnycastError
+  DaemonError
+    DaemonNotFoundError         # Binary not found, download failed
+    DaemonStartError            # Process failed to start
+    DaemonConnectionError       # gRPC connection failed
+  PeerError
+    PeerNotFoundError           # Peer unreachable
+    PeerDisconnectedError       # Connection lost
+    PeerAuthenticationError     # Noise handshake failed
+  TaskError
+    TaskNotFoundError           # Unknown task ID
+    TaskTimeoutError            # wait() timed out
+    TaskCanceledError           # Task was canceled
+    TaskFailedError             # Remote agent failed (has .error_detail)
+    TaskRejectedError           # Remote agent rejected
+  CardError
+    CardNotAvailableError       # Peer has no AgentCard
+  RoutingError
+    SkillNotFoundError          # No agents found for skill
+  BridgeError
+    BridgeConnectionError       # HTTP bridge connection failed
+    BridgeTranslationError      # Format translation failed
+```
+
+## TypeScript SDK API
+
+### Installation
+
+```bash
+npm install agentanycast
+```
+
+### Node Class
+
+```typescript
+import { Node } from "agentanycast";
+
+const node = new Node({
+  card: { name: "MyAgent", skills: [{ id: "echo", description: "Echo" }] },
+  relay: "/ip4/.../p2p/12D3KooW...",
+  // Optional: keyPath, daemonAddr, daemonPath, home
+});
+
+await node.start();
+console.log(node.peerId);  // libp2p PeerID
+
+node.onTask(async (task) => {
+  await task.complete([{ parts: [{ text: "result" }] }]);
+});
+
+await node.serveForever();
+await node.stop();  // Clean shutdown
+```
+
+### sendTask
+
+```typescript
+const msg = { role: "user" as const, parts: [{ text: "Hello" }] };
+const handle = await node.sendTask(msg, { peerId: "12D3KooW..." });
+const handle = await node.sendTask(msg, { skill: "translate" });
+const handle = await node.sendTask(msg, { url: "https://agent.example.com" });
+```
+
+### TaskHandle
+
+```typescript
+const handle = await node.sendTask(msg, { skill: "translate" });
+await handle.wait();
+console.log(handle.status);                    // TaskStatus enum
+console.log(handle.artifacts[0].parts[0].text);
+await handle.cancel();
+```
+
+### IncomingTask Interface
+
+```typescript
+interface IncomingTask {
+  taskId: string;
+  peerId: string;
+  messages: Message[];
+  targetSkillId: string;
+  senderCard?: Record<string, unknown>;
+  updateStatus: (status: string) => Promise<void>;
+  complete: (artifacts?: Artifact[]) => Promise<void>;
+  fail: (error: string) => Promise<void>;
+  requestInput: (message?: Message) => Promise<void>;
+}
+```
+
+### MCP Bridging
+
+```typescript
+import { mcpToolToSkill, skillToMcpTool, mcpToolsToAgentCard } from "agentanycast";
+const skill = mcpToolToSkill({ name: "tool", description: "..." });
+const tool = skillToMcpTool(skill);
+const card = mcpToolsToAgentCard("Server", tools, { description: "..." });
+```
+
+### DID Identity
+
+```typescript
+import { peerIdToDidKey, didKeyToPeerId } from "agentanycast";
+const did = peerIdToDidKey("12D3KooW...");
+const peerId = didKeyToPeerId("did:key:z6Mk...");
+```
+
+## Proto Service Definitions
+
+### NodeService — 16 RPCs (SDK <-> Daemon)
+
+Node Management:
+- `GetNodeInfo()` — returns PeerID, addresses, NAT type, version
+- `SetAgentCard(card)` — set/update agent's A2A card
+
+Peer Management:
+- `ConnectPeer(peer_id, addresses?)` — connect to remote peer
+- `ListPeers()` — list connected peers
+- `GetPeerCard(peer_id)` — retrieve peer's AgentCard
+
+Task Client:
+- `SendTask(target, message, metadata?)` — send task (peer_id|skill_id|url)
+- `GetTask(task_id)` — get task state
+- `CancelTask(task_id)` — cancel task
+- `SubscribeTaskUpdates(task_id)` — stream status updates
+
+Task Server:
+- `SubscribeIncomingTasks()` — stream incoming task requests
+- `UpdateTaskStatus(task_id, status, message?)` — update task status
+- `CompleteTask(task_id, artifacts, message?)` — complete with results
+- `FailTask(task_id, error_message)` — fail with error
+
+Streaming:
+- `SubscribeTaskStream(task_id)` — receive streaming artifact chunks
+- `SendStreamingArtifact(stream)` — send streaming artifact chunks
+
+Discovery:
+- `Discover(skill_id, tags?, limit?)` — find agents by skill
+
+### RegistryService — 4 RPCs (Relay Server)
+
+- `RegisterSkills(peer_id, skills, agent_name)` — register with skill registry
+- `UnregisterSkills(peer_id, skill_ids)` — unregister skills
+- `DiscoverBySkill(skill_id, tags?, limit?)` — query registry
+- `Heartbeat(peer_id)` — renew registration TTL
+
+## A2A Wire Format
+
+A2AEnvelope is the wire format over libp2p streams (`/agentanycast/a2a/1.0`):
+
+11 envelope types: SendTask, TaskStatusUpdate, TaskComplete, TaskFail, TaskCancel, GetTask, GetTaskResponse, Ack, StreamStart, StreamChunk, StreamEnd.
+
+Task lifecycle: Submitted -> Working -> Completed|Failed|Canceled|Rejected. InputRequired can loop back to Working.
+
+## Data Models
+
+**Task**: task_id, context_id, status, messages[], artifacts[], target_skill_id, originator_peer_id
+**Message**: message_id, role (user|agent), parts[]
+**Part**: text_part | data_part | url_part | raw_part, media_type, metadata
+**Artifact**: artifact_id, name, parts[]
+**AgentCard**: name, description, version, protocol_version, skills[], p2p_extension (peer_id, transports, relay_addresses, did_key)
+**Skill**: id, description, input_schema (JSON), output_schema (JSON)
+
+## Daemon Configuration
+
+Config file: `~/.agentanycast/config.toml`
+
+```toml
+# Node
+key_path = "~/.agentanycast/key"
+listen_addrs = ["/ip4/0.0.0.0/tcp/0", "/ip4/0.0.0.0/udp/0/quic-v1"]
+
+# gRPC (SDK connection)
+grpc_listen = "unix://~/.agentanycast/daemon.sock"
+
+# Relay / NAT
+bootstrap_peers = ["/ip4/RELAY_IP/tcp/4001/p2p/RELAY_PEER_ID"]
+enable_relay_client = true
+enable_hole_punching = true
+enable_mdns = true
+
+# Store
+store_path = "~/.agentanycast/data"
+offline_queue_ttl = "24h"
+
+# Logging
+log_level = "info"    # debug, info, warn, error
+log_format = "json"
+
+# HTTP Bridge
+[bridge]
+enabled = false
+listen = ":8080"
+tls_cert = ""
+tls_key = ""
+cors_origins = ["*"]
+
+# Anycast routing
+[anycast]
+routing_strategy = "random"
+cache_ttl = "30s"
+auto_register = true
+registry_addr = ""
+enable_dht = false
+dht_mode = "auto"
+
+# Prometheus metrics
+[metrics]
+enabled = false
+listen = ":9090"
+
+# MCP server
+[mcp]
+enabled = false
+listen = ":3000"
+```
+
+Environment variables override config: `AGENTANYCAST_KEY_PATH`, `AGENTANYCAST_GRPC_LISTEN`, `AGENTANYCAST_LOG_LEVEL`, etc.
+
+## Relay Server Deployment
+
+The relay server provides Circuit Relay v2 for NAT traversal and a Skill Registry for anycast discovery.
+
+```bash
+# Binary
+go build -o agentanycast-relay ./cmd/relay
+./agentanycast-relay --listen /ip4/0.0.0.0/tcp/4001 --registry-listen :50051
+
+# Docker
+docker build -t agentanycast/relay .
+docker compose up  # Uses persistent key storage
+```
+
+Agents connect to the relay via `bootstrap_peers` config or `relay` parameter in the SDK.
+
+## Security Model
+
+### Noise_XX Protocol
+
+All peer connections use Noise_XX authenticated encryption:
+- Each node has a persistent Ed25519 identity key (stored at `key_path`)
+- The handshake mutually authenticates both peers via their public keys
+- No plaintext transport path exists in the codebase
+- The PeerID is derived from the Ed25519 public key (multihash)
+
+### DID:key Identity
+
+Each PeerID maps bidirectionally to a W3C DID using the `did:key` method:
+- `12D3KooW...` <-> `did:key:z6Mk...`
+- Enables interop with DID-based ecosystems (ANP, Verifiable Credentials)
+- The daemon populates `did_key` in the AgentCard's P2P extension automatically
+
+## NAT Traversal
+
+AgentAnycast combines three libp2p mechanisms:
+
+1. **AutoNAT** — detects NAT type (public/private)
+2. **DCUtR (Direct Connection Upgrade through Relay)** — hole-punching for direct connections after initial relay contact
+3. **Circuit Relay v2** — relay-based communication when direct connections fail; resource-limited, time-bounded
+
+Connection attempt order: direct -> hole-punch -> relay fallback.
+
+## Streaming
+
+Wire format for chunked artifact delivery: StreamStart (metadata, MIME type, total_chunks) -> StreamChunk[] (sequenced data bytes) -> StreamEnd (reason: complete|canceled|error). Used over `/agentanycast/stream/1.0` protocol.
+
+## Error Handling Patterns
+
+```python
+from agentanycast import (
+    Node, PeerNotFoundError, SkillNotFoundError,
+    TaskTimeoutError, TaskFailedError, BridgeConnectionError,
+)
+
+try:
+    handle = await node.send_task(msg, skill="translate")
+    result = await handle.wait(timeout=30.0)
+except SkillNotFoundError:
+    print("No agents offering 'translate' skill")
+except TaskTimeoutError:
+    print("Task timed out")
+except TaskFailedError as e:
+    print(f"Remote agent failed: {e.error_detail}")
+except BridgeConnectionError:
+    print("HTTP bridge target unreachable")
+```
+
+## HTTP Bridge
+
+The HTTP Bridge enables interop between P2P and HTTP-based A2A agents:
+
+- **Outbound**: SDK calls `send_task(url="https://...")`, daemon proxies via HTTP
+- **Inbound**: Daemon exposes `/.well-known/agent.json` and A2A endpoints; HTTP clients send tasks that reach P2P agents
+- Configured via `[bridge]` section in config.toml
+
+## MCP Server
+
+The daemon can expose P2P capabilities as an MCP server (Streamable HTTP transport):
+
+```toml
+[mcp]
+enabled = true
+listen = ":3000"
+```
+
+This allows MCP-compatible tools (Claude Desktop, Cursor, etc.) to use P2P agent features directly.
+
+## Links
+
+- [agentanycast](https://github.com/AgentAnycast/agentanycast) — Docs and issue tracker
+- [agentanycast-python](https://github.com/AgentAnycast/agentanycast-python) — Python SDK
+- [agentanycast-ts](https://github.com/AgentAnycast/agentanycast-ts) — TypeScript SDK
+- [agentanycast-node](https://github.com/AgentAnycast/agentanycast-node) — Go daemon
+- [agentanycast-relay](https://github.com/AgentAnycast/agentanycast-relay) — Relay server
+- [agentanycast-proto](https://github.com/AgentAnycast/agentanycast-proto) — Protobuf definitions
