@@ -69,14 +69,18 @@ services:
         condition: service_healthy
 
   # ── Test Runner ────────────────────────────────────────────
+  # Multi-stage build: includes relay + node binaries so ALL integration
+  # tests run (not just docker_e2e tests that connect to external containers).
   test-runner:
     build:
-      context: ../../agentanycast-python
-      dockerfile: Dockerfile.test
+      context: ../..
+      dockerfile: agentanycast-python/Dockerfile.test
     environment:
       - NODE_A_GRPC=node-a:50051
       - NODE_B_GRPC=node-b:50051
       - RELAY_REGISTRY=relay:50052
+      - RELAY_BINARY=/usr/local/bin/agentanycast-relay
+      - NODE_BINARY=/usr/local/bin/agentanycastd
     depends_on:
       relay:
         condition: service_healthy
