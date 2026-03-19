@@ -57,6 +57,10 @@ go build -o relay ./cmd/relay
 | `--max-reservations` | Max concurrent relay reservations | `128` |
 | `--registry-listen` | gRPC address for skill registry | `:50052` |
 | `--registry-ttl` | Skill registration TTL | `30s` |
+| `--enable-webtransport` | Enable WebTransport (QUIC-based) | `false` |
+| `--mcp-listen` | MCP Streamable HTTP listen address | `:8080` |
+| `--federation-peers` | Comma-separated peer relay gRPC addresses | (none) |
+| `--federation-sync-interval` | Federation gossip sync interval | `10s` |
 | `--log-level` | Log level (`debug`, `info`, `warn`, `error`) | `info` |
 
 ### Relay Resource Limits
@@ -107,11 +111,13 @@ CLI flags > environment variables > config file > defaults
 | Variable | Description | Default |
 |---|---|---|
 | `AGENTANYCAST_KEY_PATH` | Identity key file path | `~/.agentanycast/key` |
-| `AGENTANYCAST_GRPC_LISTEN` | gRPC listen address | `127.0.0.1:50051` |
+| `AGENTANYCAST_GRPC_LISTEN` | gRPC listen address | `unix://~/.agentanycast/daemon.sock` |
 | `AGENTANYCAST_LOG_LEVEL` | Log level | `info` |
-| `AGENTANYCAST_STORE_PATH` | BoltDB store path | `~/.agentanycast/store` |
+| `AGENTANYCAST_STORE_PATH` | BoltDB store path | `~/.agentanycast/data` |
 | `AGENTANYCAST_BOOTSTRAP_PEERS` | Comma-separated relay multiaddrs | (none) |
 | `AGENTANYCAST_ENABLE_MDNS` | Enable mDNS discovery | `true` |
+| `AGENTANYCAST_REGISTRY_ADDRS` | Comma-separated registry addresses (federation) | (none) |
+| `AGENTANYCAST_MCP_LISTEN` | MCP Streamable HTTP address | (none) |
 
 ### Config File
 
@@ -119,35 +125,49 @@ Default: `~/.agentanycast/config.toml`
 
 ```toml
 key_path = "~/.agentanycast/key"
-grpc_listen = "127.0.0.1:50051"
+grpc_listen = "unix://~/.agentanycast/daemon.sock"
 log_level = "info"
 log_format = "json"
-store_path = "~/.agentanycast/store"
+store_path = "~/.agentanycast/data"
 enable_mdns = true
-bootstrap_peers = [
-    "/ip4/203.0.113.50/tcp/4001/p2p/12D3KooW..."
-]
+enable_quic = true
+enable_webtransport = false
+enable_relay_client = true
+enable_hole_punching = true
+offline_queue_ttl = "24h"
+bootstrap_peers = ["/ip4/203.0.113.50/tcp/4001/p2p/12D3KooW..."]
 
-# HTTP Bridge — expose P2P agents via HTTP A2A endpoint
 [bridge]
 enabled = false
 listen = ":8080"
 # tls_cert = "/path/to/cert.pem"
 # tls_key = "/path/to/key.pem"
-# cors_origins = ["https://app.example.com"]
+# cors_origins = ["*"]
 
-# Anycast — skill-based routing
 [anycast]
-# registry_addr = "relay.example.com:50052"   # Relay's registry gRPC address
-enable_dht = false                             # Enable Kademlia DHT discovery
-dht_mode = "auto"                              # "auto", "server", or "client"
-cache_ttl = "30s"                              # Route cache TTL
-auto_register = true                           # Auto-register skills on startup
+routing_strategy = "random"
+cache_ttl = "30s"
+auto_register = true
+# registry_addr = "relay.example.com:50052"
+# registry_addrs = ["relay1:50052", "relay2:50052"]  # multi-relay federation
+enable_dht = false
+dht_mode = "auto"   # "auto", "server", or "client"
 
-# Prometheus Metrics
 [metrics]
 enabled = false
 listen = ":9090"
+
+[mcp]
+enabled = false
+listen = ":3000"
+
+[anp]
+enabled = false
+listen = ":8090"
+
+[identity]
+# did_web = "did:web:example.com:agents:myagent"
+# did_dns_domain = "example.com"
 ```
 
 ## HTTP Bridge
@@ -222,6 +242,54 @@ enable_dht = true
 cache_ttl = "30s"
 ```
 
+## MCP Server
+
+The daemon can run as an MCP (Model Context Protocol) server for AI tool integration.
+
+### stdio mode (Claude Desktop, Cursor, VS Code, Gemini CLI)
+
+```bash
+./agentanycastd -mcp
+```
+
+### Streamable HTTP mode (ChatGPT, remote clients)
+
+```toml
+[mcp]
+enabled = true
+listen = ":3000"
+```
+
+Or via CLI: `./agentanycastd -mcp-listen :3000`
+
+The relay also exposes an MCP server (default `:8080`) with registry-specific tools for agent discovery.
+
+## ANP Bridge
+
+The ANP (Agent Network Protocol) bridge enables interoperability with the W3C ANP ecosystem:
+
+```toml
+[anp]
+enabled = true
+listen = ":8090"
+```
+
+Exposes: `GET /agent/ad.json`, `GET /agent/interface.json`, `POST /agent/rpc`.
+
+## Multi-Relay Federation
+
+Multiple relays can synchronize their registries for global agent discovery:
+
+```bash
+# Relay 1
+./relay --key ./relay1.key --federation-peers "relay2.example.com:50052"
+
+# Relay 2
+./relay --key ./relay2.key --federation-peers "relay1.example.com:50052"
+```
+
+Agents registered on Relay 1 become discoverable via Relay 2, and vice versa. Conflicts are resolved using Last-Writer-Wins with version counters.
+
 ## Prometheus Metrics
 
 Enable observability with Prometheus:
@@ -247,6 +315,8 @@ Available metrics:
 | `agentanycast_stream_chunks_total` | Counter | Streaming chunks sent/received |
 | `agentanycast_messages_total` | Counter | A2A messages by type |
 | `agentanycast_offline_queue_size` | Gauge | Queued offline messages |
+| `agentanycast_connections_by_transport` | Counter | Connections by transport (tcp/quic/webtransport) |
+| `agentanycast_mcp_tool_calls_total` | Counter | MCP tool calls by tool and status |
 
 ### Running Multiple Nodes on One Machine
 

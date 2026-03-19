@@ -212,6 +212,9 @@ class AgentCard:
     supported_transports: list[str] = field(default_factory=list)
     relay_addresses: list[str] = field(default_factory=list)
     did_key: str | None = None
+    did_web: str | None = None
+    did_dns: str | None = None
+    verifiable_credentials: list[str] = field(default_factory=list)
 ```
 
 | Field | Description |
@@ -224,7 +227,10 @@ class AgentCard:
 | `peer_id` | This agent's Peer ID (set by daemon, read-only) |
 | `supported_transports` | Active transport protocols (read-only) |
 | `relay_addresses` | Connected relay addresses (read-only) |
-| `did_key` | W3C DID representation of the Peer ID (read-only) |
+| `did_key` | W3C `did:key` derived from Ed25519 public key (read-only) |
+| `did_web` | `did:web` identifier for web-based DID resolution (read-only) |
+| `did_dns` | `did:dns` domain for DNS-based resolution (read-only) |
+| `verifiable_credentials` | JSON-encoded Verifiable Credentials (read-only) |
 
 ### Methods
 
@@ -537,12 +543,18 @@ Convert between libp2p Peer IDs and W3C Decentralized Identifiers.
 
 ```python
 from agentanycast.did import peer_id_to_did_key, did_key_to_peer_id
+from agentanycast.did import did_web_to_url, url_to_did_web
 
-# PeerID → DID
+# did:key — derived from Ed25519 public key
 did = peer_id_to_did_key("12D3KooW...")    # "did:key:z6Mk..."
-
-# DID → PeerID
 pid = did_key_to_peer_id("did:key:z6Mk...")  # "12D3KooW..."
+
+# did:web — web-based DID resolution
+url = did_web_to_url("did:web:example.com:agents:myagent")
+# "https://example.com/agents/myagent/did.json"
+
+did = url_to_did_web("https://example.com/agents/myagent/did.json")
+# "did:web:example.com:agents:myagent"
 ```
 
 ---
@@ -603,6 +615,61 @@ adapter = LangGraphAdapter(compiled_graph)
 ```
 
 Install: `pip install agentanycast[langgraph]`
+
+### Google ADK Adapter
+
+```python
+from agentanycast.adapters.adk import ADKAdapter, serve_adk_agent
+
+# Quick start
+await serve_adk_agent(agent, card=card, relay="...")
+
+# Or use the adapter directly
+adapter = ADKAdapter(agent, app_name="myapp")
+```
+
+Install: `pip install agentanycast[google-adk]`
+
+### OpenAI Agents SDK Adapter
+
+```python
+from agentanycast.adapters.openai_agents import OpenAIAgentsAdapter, serve_openai_agent
+
+# Quick start
+await serve_openai_agent(agent, card=card, relay="...")
+```
+
+Install: `pip install agentanycast[openai-agents]`
+
+---
+
+## A2A v1.0 Compatibility
+
+Bidirectional conversion between internal models and the official A2A v1.0 JSON format.
+
+```python
+from agentanycast.compat.a2a_v1 import (
+    task_to_a2a_json, task_from_a2a_json,
+    card_to_a2a_json, card_from_a2a_json,
+    message_to_a2a_json, message_from_a2a_json,
+)
+
+a2a_json = task_to_a2a_json(task)    # Internal Task → A2A v1.0 JSON
+task = task_from_a2a_json(a2a_json)  # A2A v1.0 JSON → Internal Task
+```
+
+---
+
+## OASF (Open Agentic Schema Framework)
+
+Convert Agent Cards to/from OASF records for publishing to the AGNTCY Agent Directory Service.
+
+```python
+from agentanycast.compat.oasf import card_to_oasf_record, card_from_oasf_record
+
+record = card_to_oasf_record(card, authors=["my-org"])
+card = card_from_oasf_record(record)
+```
 
 ---
 

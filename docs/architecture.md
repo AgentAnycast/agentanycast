@@ -52,24 +52,28 @@ The daemon is the P2P engine. Internal packages:
 |---|---|
 | `internal/a2a/` | A2A protocol engine — task state machine, envelope routing, offline queue, streaming |
 | `internal/node/` | libp2p host — peer connections, mDNS discovery, DHT, stream multiplexing |
-| `internal/crypto/` | Ed25519 key management, Noise_XX integration |
+| `internal/crypto/` | Ed25519 key management, Noise_XX integration, DID conversion (did:key, did:web, did:dns), Verifiable Credentials |
 | `internal/nat/` | AutoNAT detection, DCUtR hole punching, Circuit Relay v2 client |
 | `internal/store/` | BoltDB persistence — tasks, agent cards, offline message queue |
 | `internal/config/` | Configuration — TOML file, environment variables, CLI flags |
 | `internal/bridge/` | HTTP Bridge — translates HTTP JSON-RPC ↔ P2P A2A envelopes |
-| `internal/anycast/` | Anycast router — skill-based addressing, registry + DHT discovery |
-| `internal/metrics/` | Prometheus metrics — connections, tasks, routing, bridge, streaming |
+| `internal/anycast/` | Anycast router — skill-based addressing, registry + multi-registry federation + DHT discovery |
+| `internal/metrics/` | Prometheus metrics — connections, tasks, routing, bridge, streaming, MCP |
+| `internal/mcp/` | MCP Server — exposes P2P capabilities as MCP tools (stdio + Streamable HTTP) |
+| `internal/anp/` | ANP Bridge — translates ANP HTTP ↔ A2A P2P (JSON-RPC 2.0 + JSON-LD) |
 | `pkg/grpcserver/` | gRPC server — 16 RPC methods exposed to the SDK |
 
 The daemon is started and stopped by the SDK. It runs as a local process, listening only on a Unix domain socket (or localhost TCP).
 
 ### Relay Server (`agentanycast-relay`)
 
-The relay provides two services:
+The relay provides three services:
 
 1. **Circuit Relay v2** — bridges agents across different networks with strict resource limits. The relay **cannot read traffic** — all communication is end-to-end encrypted before reaching the relay.
 
 2. **Skill Registry** — in-memory registry where agents register their skills and discover each other by capability. TTL-based expiration with heartbeat renewal.
+
+3. **Federation** — gossip-based synchronization across multiple relays for global agent discovery. Uses Last-Writer-Wins conflict resolution.
 
 ### Proto Definitions (`agentanycast-proto`)
 
@@ -77,8 +81,9 @@ The single source of truth for all interfaces. Contains:
 
 - **`node_service.proto`** — 16 RPC methods between SDK and daemon
 - **`registry_service.proto`** — 4 RPC methods for skill registry on relay
+- **`federation.proto`** — 2 RPC methods for multi-relay registry synchronization
 - **`a2a_models.proto`** — Task, Message, Part, Artifact, A2AEnvelope (11 envelope types)
-- **`agent_card.proto`** — A2A-compatible capability descriptor with P2P extension
+- **`agent_card.proto`** — A2A-compatible capability descriptor with P2P extension (did:key, did:web, did:dns, VCs)
 - **`streaming.proto`** — StreamStart, StreamChunk, StreamEnd for chunked delivery
 - **`common.proto`** — Shared types (PeerInfo, NodeInfo, TaskStatus)
 
@@ -198,7 +203,13 @@ Every node has an **Ed25519 key pair**, generated on first start and persisted i
 
 #### W3C DID Interop
 
-Peer IDs can be converted to W3C Decentralized Identifiers (`did:key:z6Mk...`) for interoperability with DID-based systems. The SDK provides `peer_id_to_did_key()` and `did_key_to_peer_id()` for bidirectional conversion.
+Peer IDs can be converted to multiple DID methods for interoperability:
+
+- **`did:key`** — derived directly from the Ed25519 public key (`did:key:z6Mk...`)
+- **`did:web`** — web-based DID resolution (`did:web:example.com:agents:myagent`)
+- **`did:dns`** — DNS-based DID resolution
+
+The SDK provides bidirectional conversion functions (`peer_id_to_did_key`, `did_web_to_url`, etc.). Agent Cards can also carry Verifiable Credentials for trust attestation.
 
 ### Encryption
 
@@ -232,7 +243,7 @@ Agents behind NATs or firewalls use a three-tier strategy:
 
 ### Tier 1: Direct Connection
 
-If both agents are on the same network (or have public IPs), they connect directly via TCP or QUIC.
+If both agents are on the same network (or have public IPs), they connect directly via TCP, QUIC, or WebTransport.
 
 ### Tier 2: Hole Punching (DCUtR)
 
@@ -337,11 +348,50 @@ If a message can't be delivered (peer is offline or unreachable), the daemon:
 
 This provides **at-least-once delivery** for A2A envelopes without requiring the application to implement retry logic. Messages expire after a configurable TTL (default 24 hours).
 
+## MCP Server
+
+The daemon can run as an [MCP (Model Context Protocol)](https://modelcontextprotocol.io/) server, exposing P2P capabilities as tools for AI assistants like Claude Desktop, Cursor, VS Code, ChatGPT, and Gemini CLI.
+
+Two transport modes:
+- **stdio** — local integration (`agentanycastd -mcp`)
+- **Streamable HTTP** — remote clients (`agentanycastd -mcp-listen :3000`)
+
+Available tools: `toolGetNodeInfo`, `toolListConnectedPeers`, `toolGetAgentCard`, `toolDiscoverAgents`, `toolSendTask`, `toolSendTaskBySkill`, `toolGetTaskStatus`.
+
+The relay also exposes an MCP server with registry-specific tools (`discover_agents`, `list_skills`, `get_relay_info`).
+
+## ANP Bridge
+
+The [ANP (Agent Network Protocol)](https://www.w3.org/community/anp/) bridge enables interoperability with the W3C ANP ecosystem:
+
+- `GET /agent/ad.json` — Agent Description (JSON-LD)
+- `GET /agent/interface.json` — OpenRPC specification
+- `POST /agent/rpc` — JSON-RPC 2.0 endpoint
+
+## Multi-Relay Federation
+
+Multiple relay servers can synchronize their skill registries using gossip-based federation:
+
+1. Each relay periodically pulls updates from configured peer relays
+2. New registrations are pushed to peers
+3. Conflicts are resolved using Last-Writer-Wins with version counters
+4. Local registrations always take priority over federated ones
+
+This enables global agent discovery across relay clusters without a single point of failure.
+
 ## Interoperability
 
-### MCP (Model Context Protocol)
+### MCP Tool Mapping
 
 The SDK can map MCP tools to A2A skills and vice versa, enabling agents built on MCP to participate in the AgentAnycast network.
+
+### A2A v1.0 Protocol Compatibility
+
+The Python SDK includes a compatibility layer (`compat/a2a_v1.py`) for bidirectional conversion between internal models and the official A2A v1.0 JSON format.
+
+### OASF (Open Agentic Schema Framework)
+
+Agent Cards can be converted to/from OASF records for publishing to the AGNTCY Agent Directory Service.
 
 ### AGNTCY Directory
 
@@ -349,7 +399,7 @@ The SDK can query the AGNTCY agent directory for cross-ecosystem discovery, find
 
 ### Framework Adapters
 
-Built-in adapters for CrewAI and LangGraph wrap existing framework instances as P2P-capable agents, requiring minimal code changes.
+Built-in adapters for CrewAI, LangGraph, Google ADK, and OpenAI Agents SDK wrap existing framework instances as P2P-capable agents, requiring minimal code changes.
 
 ## gRPC Interface
 

@@ -5,7 +5,8 @@ This guide walks you through installing AgentAnycast and running your first pair
 ## Prerequisites
 
 - **Python 3.10+** — for the SDK
-- **Go 1.24+** — only if building the daemon from source (the SDK can auto-download it)
+- **Node.js 18+** — for the TypeScript SDK (alternative to Python)
+- **Go 1.25+** — only if building the daemon from source (the SDK can auto-download it)
 
 ## Installation
 
@@ -17,11 +18,19 @@ pip install agentanycast
 
 The SDK automatically downloads the correct `agentanycastd` daemon binary for your platform on first run. No manual setup required.
 
+Or use TypeScript:
+
+```bash
+npm install agentanycast
+```
+
 With framework adapters:
 
 ```bash
-pip install agentanycast[crewai]      # CrewAI integration
-pip install agentanycast[langgraph]   # LangGraph integration
+pip install agentanycast[crewai]         # CrewAI integration
+pip install agentanycast[langgraph]      # LangGraph integration
+pip install agentanycast[google-adk]     # Google ADK integration
+pip install agentanycast[openai-agents]  # OpenAI Agents SDK integration
 ```
 
 ### (Optional) Build the daemon from source

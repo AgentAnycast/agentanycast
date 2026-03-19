@@ -338,6 +338,58 @@ asyncio.run(main())
 
 Install: `pip install agentanycast[langgraph]`
 
+## Google ADK Integration
+
+Expose a Google ADK agent as a P2P agent.
+
+```python
+import asyncio
+from google.adk import Agent
+from agentanycast import AgentCard, Skill
+from agentanycast.adapters.adk import serve_adk_agent
+
+agent = Agent(name="assistant", model="gemini-2.0-flash", ...)
+
+card = AgentCard(
+    name="ADKAgent",
+    description="An agent powered by Google ADK",
+    skills=[Skill(id="assist", description="General assistance")],
+)
+
+async def main():
+    await serve_adk_agent(agent, card=card, relay="...")
+
+asyncio.run(main())
+```
+
+Install: `pip install agentanycast[google-adk]`
+
+## OpenAI Agents SDK Integration
+
+Expose an OpenAI agent as a P2P agent.
+
+```python
+import asyncio
+from agents import Agent
+from agentanycast import AgentCard, Skill
+from agentanycast.adapters.openai_agents import serve_openai_agent
+
+agent = Agent(name="assistant", instructions="You are a helpful assistant.", model="gpt-4o")
+
+card = AgentCard(
+    name="OpenAIAgent",
+    description="An agent powered by OpenAI",
+    skills=[Skill(id="assist", description="General assistance")],
+)
+
+async def main():
+    await serve_openai_agent(agent, card=card, relay="...")
+
+asyncio.run(main())
+```
+
+Install: `pip install agentanycast[openai-agents]`
+
 ## MCP Tool Mapping
 
 Convert MCP (Model Context Protocol) tools into A2A skills:
@@ -369,19 +421,21 @@ Work with W3C Decentralized Identifiers alongside Peer IDs:
 
 ```python
 from agentanycast.did import peer_id_to_did_key, did_key_to_peer_id
+from agentanycast.did import did_web_to_url, url_to_did_web
 
-# Convert Peer ID to DID
-did = peer_id_to_did_key("12D3KooWAbCdEf...")
-print(did)  # "did:key:z6MkhaXgBZ..."
+# did:key — derived from Ed25519 public key
+did = peer_id_to_did_key("12D3KooWAbCdEf...")   # "did:key:z6Mk..."
+peer_id = did_key_to_peer_id("did:key:z6Mk...")  # "12D3KooWAbCdEf..."
 
-# Convert DID back to Peer ID
-peer_id = did_key_to_peer_id("did:key:z6MkhaXgBZ...")
-print(peer_id)  # "12D3KooWAbCdEf..."
+# did:web — web-based DID resolution
+url = did_web_to_url("did:web:example.com:agents:myagent")
+# "https://example.com/agents/myagent/did.json"
 
-# The AgentCard also includes the DID
+# The AgentCard includes all DID methods
 async with Node(card=card) as node:
     remote_card = await node.get_card("12D3KooW...")
     print(remote_card.did_key)  # "did:key:z6Mk..."
+    print(remote_card.did_web)  # "did:web:example.com:agents:myagent"
 ```
 
 ## Cross-Network Communication

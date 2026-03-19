@@ -5,89 +5,27 @@
 <h1 align="center">AgentAnycast</h1>
 
 <p align="center">
-  <strong>Connect AI agents across any network.<br>No public IP. No VPN. No configuration.</strong>
+  <strong>Decentralized P2P runtime for the A2A protocol.</strong><br>
+  <em>Connect AI agents across any network — no public IP, no VPN, no configuration.</em>
 </p>
 
 <p align="center">
-  <a href="https://pypi.org/project/agentanycast/"><img src="https://img.shields.io/pypi/v/agentanycast?label=Python%20SDK&color=blue" alt="PyPI"></a>
-  <a href="https://www.npmjs.com/package/agentanycast"><img src="https://img.shields.io/npm/v/agentanycast?label=TypeScript%20SDK&color=blue" alt="npm"></a>
-  <a href="https://pypi.org/project/agentanycast/"><img src="https://img.shields.io/pypi/dm/agentanycast?label=PyPI%20downloads&color=orange" alt="PyPI Downloads"></a>
-  <a href="https://www.npmjs.com/package/agentanycast"><img src="https://img.shields.io/npm/dm/agentanycast?label=npm%20downloads&color=orange" alt="npm Downloads"></a>
+  <a href="https://pypi.org/project/agentanycast/"><img src="https://img.shields.io/pypi/v/agentanycast?label=Python&color=3776AB" alt="PyPI"></a>
+  <a href="https://www.npmjs.com/package/agentanycast"><img src="https://img.shields.io/npm/v/agentanycast?label=TypeScript&color=3178C6" alt="npm"></a>
+  <a href="https://github.com/AgentAnycast/agentanycast-node/releases"><img src="https://img.shields.io/github/v/release/AgentAnycast/agentanycast-node?label=Daemon&color=00ADD8" alt="Daemon"></a>
   <a href="#license"><img src="https://img.shields.io/badge/license-Apache%202.0%20%2F%20FSL-green" alt="License"></a>
-  <a href="https://github.com/AgentAnycast/agentanycast/discussions"><img src="https://img.shields.io/badge/community-discussions-blue?logo=github" alt="Discussions"></a>
+  <a href="https://github.com/AgentAnycast/agentanycast/discussions"><img src="https://img.shields.io/github/discussions/AgentAnycast/agentanycast?label=Discussions&color=blue" alt="Discussions"></a>
 </p>
 
 ---
 
-<p align="center">
-  <img src="docs/assets/demo.svg" alt="AgentAnycast Demo" width="100%">
-</p>
-
-AgentAnycast is a decentralized P2P runtime for the [A2A (Agent-to-Agent)](https://github.com/a2aproject/A2A) protocol, powered by [libp2p](https://libp2p.io/). It lets AI agents securely communicate across any network — your laptop, a corporate server, or the other side of the internet — without public IPs, VPNs, or any infrastructure setup.
-
-- 🔒 **End-to-end encrypted** — Noise_XX protocol. Relay servers see only ciphertext.
-- 🌐 **NAT traversal built in** — AutoNAT + DCUtR + Circuit Relay. Works from behind any firewall.
-- 🎯 **Skill-based routing** — Send tasks by capability, not by address. The network finds the right agent.
-- 🔌 **Framework adapters** — One-line integration with CrewAI, LangGraph, and MCP tools.
-- 🪪 **Decentralized identity** — Ed25519 keys + W3C DID:key. No certificates, no DNS, no accounts.
-- 🚀 **Zero config** — `pip install agentanycast` and you're live. The daemon is auto-managed.
+AgentAnycast implements the [A2A (Agent-to-Agent)](https://github.com/a2aproject/A2A) protocol over [libp2p](https://libp2p.io/) peer-to-peer connections. It gives AI agents the ability to securely find and talk to each other across any network — laptops behind NAT, corporate firewalls, or across the internet — with automatic encryption, NAT traversal, and skill-based discovery.
 
 ```bash
 pip install agentanycast    # or: npm install agentanycast
 ```
 
-## Why
-
-[A2A](https://github.com/a2aproject/A2A) is the emerging standard for agent-to-agent communication — but it requires every agent to be an **HTTP server with a public URL**. This excludes most real-world agents:
-
-| Problem | Impact |
-|---|---|
-| **Agents behind NAT** | Laptops, dev machines, edge devices can't accept incoming connections |
-| **Agents behind firewalls** | Corporate networks don't expose internal services to the internet |
-| **Privacy-sensitive agents** | Routing prompts through a centralized gateway is a non-starter |
-
-No mainstream agent framework solves this. They all assume agents share the same process or the same cloud. **AgentAnycast is the transport layer that closes this gap.**
-
-### How does it compare?
-
-| | AgentAnycast | HTTP A2A | ngrok / Tailscale | Direct TCP |
-|---|---|---|---|---|
-| Zero config | ✅ | ❌ Need public IP | ❌ Need account | ❌ Port forwarding |
-| E2E encryption | ✅ Noise_XX | ❌ TLS only | Partial | ❌ |
-| NAT traversal | ✅ Automatic | ❌ | ✅ | ❌ |
-| Decentralized | ✅ DHT + DID | ❌ | ❌ | ❌ |
-| A2A protocol | ✅ Native | ✅ | ❌ | ❌ |
-| Skill discovery | ✅ Anycast | ❌ | ❌ | ❌ |
-| Framework adapters | ✅ CrewAI, LangGraph, MCP | Manual | ❌ | ❌ |
-
-## What It Does
-
-**Zero-config connectivity** — One command makes your agent reachable. Like ngrok, but for A2A agents.
-
-```bash
-agentanycast demo
-# Your agent is now live. Other agents can find and call it.
-```
-
-**Capability-based routing** — Send tasks by skill, not by address. The network finds the right agent.
-
-```python
-task = await node.send_task(skill="translate", message=msg)
-```
-
-**End-to-end encryption** — All traffic is encrypted with [Noise_XX](https://noiseprotocol.org/). Relay servers only see ciphertext. No plaintext path exists in the codebase.
-
-```
-Agent A ◄──── Noise_XX (E2E encrypted) ────► Agent B
-                       │
-                 ┌─────┴─────┐
-                 │   Relay    │  ← forwards ciphertext only
-                 └───────────┘
-```
-
 ## Quick Start
-
-### 30-second demo
 
 ```bash
 pip install agentanycast
@@ -99,7 +37,7 @@ agentanycast demo
 agentanycast send <PEER_ID> "Hello!"
 ```
 
-### Python — build a server agent
+Build an agent in Python:
 
 ```python
 from agentanycast import Node, AgentCard, Skill
@@ -119,7 +57,7 @@ async with Node(card=card) as node:
     await node.serve_forever()
 ```
 
-### Python — send a task to another agent
+Send a task to another agent:
 
 ```python
 async with Node(card=card) as node:
@@ -131,36 +69,33 @@ async with Node(card=card) as node:
     print(result.artifacts[0].parts[0].text)  # "Echo: Hello!"
 ```
 
-### TypeScript — works the same way
+> Python and TypeScript agents interoperate out of the box — same protocol, same daemon. See the [TypeScript SDK](https://github.com/AgentAnycast/agentanycast-ts) for JS/TS usage.
 
-```typescript
-import { Node } from "agentanycast";
+## Why AgentAnycast
 
-const node = new Node({
-  card: { name: "Echo", skills: [{ id: "echo", description: "Echo" }] },
-});
-await node.start();
+[A2A](https://github.com/a2aproject/A2A) is the emerging standard for agent-to-agent communication, but it requires every agent to be an HTTP server with a public URL. This excludes agents on laptops (behind NAT), inside corporate firewalls, or in any environment where routing prompts through a centralized gateway is unacceptable. No mainstream agent framework solves cross-network agent communication — they all assume agents share the same process or the same cloud.
 
-node.onTask(async (task) => {
-  const text = task.messages.at(-1)?.parts[0]?.text ?? "";
-  await task.complete([{ parts: [{ text: `Echo: ${text}` }] }]);
-});
+AgentAnycast solves this at the transport layer:
 
-await node.serveForever();
-```
-
-Python and TypeScript agents can talk to each other out of the box — they share the same protocol.
+- **Zero-config connectivity** — `pip install` and your agent is reachable. The Go daemon is auto-managed.
+- **Skill-based routing** — send tasks by capability, not by address. The network finds the right agent.
+- **End-to-end encrypted** — Noise_XX protocol. Even relay servers see only ciphertext. No plaintext path exists in the codebase.
+- **Automatic NAT traversal** — hole-punching (DCUtR) first, relay fallback if needed. Works from behind any firewall.
+- **Decentralized identity** — Ed25519 keys, W3C DID (`did:key`, `did:web`), Verifiable Credentials. No CA, no accounts.
+- **MCP server built in** — the daemon runs as an MCP server for Claude Desktop, Cursor, ChatGPT, and other AI tools.
 
 ## Three Ways to Send a Task
 
+AgentAnycast supports three addressing modes, so you can reach any agent regardless of how it's connected:
+
 ```python
-# 1. Direct — you know the agent's ID
+# 1. Direct — you know the agent's Peer ID
 await node.send_task(peer_id="12D3KooW...", message=msg)
 
 # 2. By skill — you know what you need, the network finds the right agent
 await node.send_task(skill="translate", message=msg)
 
-# 3. HTTP Bridge — call a traditional HTTP-based A2A agent from the P2P network
+# 3. HTTP Bridge — reach a standard HTTP A2A agent from the P2P network
 await node.send_task(url="https://agent.example.com", message=msg)
 ```
 
@@ -168,52 +103,58 @@ await node.send_task(url="https://agent.example.com", message=msg)
 |---|---|
 | **Direct** | You have the agent's Peer ID. Point-to-point communication. |
 | **By skill** | You need a capability (e.g., "translate"). The skill registry finds an agent for you. |
-| **HTTP Bridge** | The target agent uses standard HTTP (Google ADK, etc.). The bridge translates between HTTP and P2P. |
+| **HTTP Bridge** | The target is a standard HTTP A2A agent (Google ADK, etc.). The bridge translates between HTTP and P2P. |
 
 ## How It Works
 
-Sidecar architecture — a local Go daemon handles P2P networking, and your SDK communicates with it over gRPC.
+AgentAnycast uses a sidecar architecture: a thin SDK communicates over gRPC with a local Go daemon that handles all the P2P networking, encryption, and A2A protocol logic.
 
 <p align="center">
-  <img src="docs/assets/architecture.svg" alt="AgentAnycast Architecture" width="100%">
+  <img src="docs/assets/architecture.svg" alt="Architecture" width="100%">
 </p>
 
 - **On a local network** — agents discover each other automatically via mDNS. Nothing to configure.
-- **Across networks** — deploy a lightweight relay server. Agents connect through it, and the relay can't read any traffic.
-- **Behind NAT** — the daemon automatically tries hole-punching first, then falls back to relay if needed.
-- **Identity** — each agent gets an Ed25519 key pair. No certificates, no DNS setup. The key *is* the identity.
+- **Across networks** — deploy a self-hosted relay. Agents connect through it, and the relay **cannot read traffic** — all communication is end-to-end encrypted.
+- **Behind NAT** — the daemon automatically tries hole-punching (DCUtR) first, then falls back to relay if needed.
+- **Identity** — each agent gets an Ed25519 key pair. No certificates, no DNS setup. The key *is* the identity. It maps to W3C DIDs (`did:key`, `did:web`) for cross-ecosystem interoperability.
 
 ## Framework Adapters
 
-Turn an existing CrewAI crew or LangGraph graph into a P2P agent with one call:
+Turn existing agent frameworks into P2P agents with one function call:
 
 ```python
 from agentanycast.adapters.crewai import serve_crew
-await serve_crew(my_crew, card=card, relay="...")
-
 from agentanycast.adapters.langgraph import serve_graph
-await serve_graph(my_graph, card=card, relay="...")
+from agentanycast.adapters.adk import serve_adk_agent
+from agentanycast.adapters.openai_agents import serve_openai_agent
+
+await serve_crew(my_crew, card=card, relay="...")          # CrewAI
+await serve_graph(my_graph, card=card, relay="...")         # LangGraph
+await serve_adk_agent(my_agent, card=card, relay="...")     # Google ADK
+await serve_openai_agent(my_agent, card=card, relay="...")  # OpenAI Agents SDK
 ```
 
 ## Interoperability
 
+AgentAnycast is designed to work with the broader agent ecosystem, not as an isolated silo:
+
 | Ecosystem | Integration |
 |---|---|
 | [**A2A**](https://github.com/a2aproject/A2A) | Native implementation — Agent Card, Task, Message, Artifact |
-| **HTTP A2A agents** | HTTP Bridge translates between P2P and HTTP bidirectionally |
-| [**MCP**](https://modelcontextprotocol.io/) | Map MCP tools to A2A skills and back (`mcpToolToSkill` / `skillToMcpTool`) |
-| **W3C DID** | Convert between Peer IDs and `did:key` identifiers |
-| [**AGNTCY**](https://github.com/agntcy) | Query the AGNTCY agent directory for cross-ecosystem discovery |
+| **HTTP A2A** | HTTP Bridge translates between P2P and HTTP bidirectionally |
+| [**MCP**](https://modelcontextprotocol.io/) | Daemon runs as MCP server (stdio + HTTP); SDK maps MCP tools ↔ A2A skills |
+| [**ANP**](https://www.w3.org/community/anp/) | ANP Bridge for Agent Network Protocol interop |
+| **W3C DID** | `did:key`, `did:web`, `did:dns` identity + Verifiable Credentials |
+| [**AGNTCY**](https://github.com/agntcy) | Agent directory integration + OASF record conversion |
 
-## Deploy Your Own Relay
+## Self-Hosted Relay
 
-On a local network, no relay is needed — agents find each other automatically.
+On a LAN, no relay is needed — agents find each other automatically via mDNS.
 
 For agents on different networks, deploy a relay on any machine with a public IP:
 
 ```bash
-git clone https://github.com/AgentAnycast/agentanycast-relay.git
-cd agentanycast-relay
+git clone https://github.com/AgentAnycast/agentanycast-relay.git && cd agentanycast-relay
 docker-compose up -d
 ```
 
@@ -224,72 +165,37 @@ async with Node(card=card, relay="/ip4/<IP>/tcp/4001/p2p/12D3KooW...") as node:
     ...
 ```
 
-The relay **cannot read your traffic** — it only forwards ciphertext. It also hosts a **skill registry** for capability-based agent discovery.
-
-## What AgentAnycast Is *Not*
-
-- **Not an agent framework** — use CrewAI, LangGraph, or whatever you prefer. AgentAnycast is the networking layer underneath.
-- **Not an orchestration engine** — it doesn't decide what agents do. It just lets them connect.
-- **Not a centralized platform** — you own your relay, your keys, your data. Nothing is hosted for you unless you choose it.
+The relay is a **zero-knowledge forwarder** — it only passes encrypted bytes. It also hosts a **skill registry** for capability-based agent discovery, with optional **multi-relay federation** for global discovery across relay clusters.
 
 ## Repositories
 
-| Repository | What it is | Language |
-|---|---|---|
-| **[agentanycast](https://github.com/AgentAnycast/agentanycast)** | This repo — documentation and discussions | — |
-| **[agentanycast-python](https://github.com/AgentAnycast/agentanycast-python)** | Python SDK — `pip install agentanycast` | Python |
-| **[agentanycast-ts](https://github.com/AgentAnycast/agentanycast-ts)** | TypeScript SDK — `npm install agentanycast` | TypeScript |
-| **[agentanycast-node](https://github.com/AgentAnycast/agentanycast-node)** | Go daemon — P2P networking, encryption, A2A engine | Go |
-| **[agentanycast-relay](https://github.com/AgentAnycast/agentanycast-relay)** | Relay server + skill registry | Go |
-| **[agentanycast-proto](https://github.com/AgentAnycast/agentanycast-proto)** | Protocol Buffer definitions (gRPC + A2A data models) | Protobuf |
-
-## Examples
-
-| Example | What it shows |
+| Repository | Description |
 |---|---|
-| **[Hello World](examples/01-hello-world/)** | Two agents communicating over encrypted P2P |
-| **[CrewAI over P2P](examples/02-crewai-p2p/)** | Expose a CrewAI crew as a network-reachable agent |
-| **[LangGraph over P2P](examples/03-langgraph-agent/)** | Expose a LangGraph graph as a P2P agent |
-| **[MCP Bridge](examples/04-mcp-bridge/)** | Map MCP tools to A2A skills on the P2P network |
-| **[Skill Discovery](examples/05-skill-discovery/)** | Find agents by capability with anycast routing |
+| **[agentanycast](https://github.com/AgentAnycast/agentanycast)** | Documentation, examples, discussions — **start here** |
+| **[agentanycast-python](https://github.com/AgentAnycast/agentanycast-python)** | Python SDK — `pip install agentanycast` |
+| **[agentanycast-ts](https://github.com/AgentAnycast/agentanycast-ts)** | TypeScript SDK — `npm install agentanycast` |
+| **[agentanycast-node](https://github.com/AgentAnycast/agentanycast-node)** | Go daemon — P2P networking, encryption, A2A engine, MCP server |
+| **[agentanycast-relay](https://github.com/AgentAnycast/agentanycast-relay)** | Relay server + skill registry + multi-relay federation |
+| **[agentanycast-proto](https://github.com/AgentAnycast/agentanycast-proto)** | Protocol Buffer definitions — single source of truth |
 
 ## Documentation
 
 | Guide | What you'll learn |
 |---|---|
 | **[Getting Started](docs/getting-started.md)** | Install, run your first agent, connect two agents |
-| **[Architecture](docs/architecture.md)** | How the sidecar model works, security design, NAT traversal |
-| **[Python SDK Reference](docs/python-sdk.md)** | Complete API docs for every class and method |
-| **[Deployment](docs/deployment.md)** | Production relay setup, HTTP bridge, metrics, security hardening |
-| **[Protocol Reference](docs/protocol.md)** | Wire format, task lifecycle, gRPC service definition |
-| **[Examples](docs/examples.md)** | Recipes: skill routing, framework adapters, streaming, LLM agents |
-
-## Roadmap
-
-AgentAnycast follows a phased release plan:
-
-- **v0.1** ✅ — Core P2P runtime: libp2p networking, Noise_XX encryption, gRPC sidecar, Python SDK
-- **v0.2** ✅ — Production hardening: NAT traversal (AutoNAT + DCUtR + Relay), HTTP bridge, offline queue, streaming
-- **v0.3** ✅ — Ecosystem expansion: TypeScript SDK, DHT-based discovery, DID:key identity, MCP bridging, AGNTCY integration
-- **v0.4** 🔜 — Developer experience: MCP Server for P2P networking, more framework adapters, interactive playground
-- **v0.5** 🔜 — Enterprise features: multi-relay federation, access control policies, audit logging
-
-## For AI Coding Assistants
-
-This project provides an [`llms.txt`](llms.txt) file for AI agent discoverability and a [`.cursorrules`](.cursorrules) file for Cursor IDE integration.
+| **[Architecture](docs/architecture.md)** | Sidecar model, security, NAT traversal, MCP, federation |
+| **[Python SDK Reference](docs/python-sdk.md)** | Complete API docs — Node, AgentCard, TaskHandle, DID, adapters |
+| **[Deployment Guide](docs/deployment.md)** | Production relay, HTTP bridge, MCP server, metrics, security |
+| **[Protocol Reference](docs/protocol.md)** | Wire format, task lifecycle, 22 RPCs across 3 gRPC services |
+| **[Examples](docs/examples.md)** | Patterns: anycast, adapters, streaming, LLM-powered agents |
 
 ## Contributing
 
-We welcome contributions! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
-
-All repositories require a [CLA](CLA.md) signature — a bot will guide you on your first PR.
+We welcome contributions! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines. All repositories require a [CLA](CLA.md) signature — a bot will guide you on your first PR.
 
 ## License
 
-| Component | License |
-|---|---|
-| SDKs (Python, TypeScript) + Proto | [Apache-2.0](https://www.apache.org/licenses/LICENSE-2.0) |
-| Daemon + Relay | [FSL-1.1-Apache-2.0](https://fsl.software/) (auto-converts to Apache-2.0 after 2 years) |
+SDKs and Proto definitions are [Apache-2.0](https://www.apache.org/licenses/LICENSE-2.0). Daemon and Relay are [FSL-1.1-Apache-2.0](https://fsl.software/) — each release auto-converts to Apache-2.0 after two years.
 
 ## Community
 

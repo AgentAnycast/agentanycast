@@ -27,6 +27,7 @@ All types are defined in the `agentanycast.v1` proto package. Source files live 
 | `streaming.proto` | `StreamStart`, `StreamChunk`, `StreamEnd`, `StreamEndReason` |
 | `node_service.proto` | gRPC `NodeService` (16 RPCs) |
 | `registry_service.proto` | gRPC `RegistryService` (4 RPCs) |
+| `federation.proto` | gRPC `FederationService` (2 RPCs) — multi-relay registry sync |
 
 ## Agent Card
 
@@ -54,6 +55,9 @@ message P2PExtension {
   repeated string supported_transports = 2;
   repeated string relay_addresses = 3;
   string did_key = 4;         // W3C DID (did:key:z6Mk...)
+  string did_web = 5;         // did:web identifier
+  string did_dns = 6;         // did:dns domain
+  repeated string verifiable_credentials = 7;  // JSON-encoded VCs
 }
 ```
 
@@ -395,6 +399,20 @@ message SkillRegistration {
 - `DiscoverBySkill` — finds agents by skill ID with optional tag filtering
 - `Heartbeat` — renews TTL on existing registrations
 
+### FederationService (2 RPCs)
+
+Enables gossip-based registry synchronization across multiple relay servers.
+
+```protobuf
+service FederationService {
+  rpc SyncRegistrations(SyncRegistrationsRequest) returns (SyncRegistrationsResponse);
+  rpc PushRegistrations(PushRegistrationsRequest) returns (PushRegistrationsResponse);
+}
+```
+
+- `SyncRegistrations` — pull registration updates since a given timestamp from a peer relay
+- `PushRegistrations` — push local registration updates to a peer relay; uses LWW (Last-Writer-Wins) conflict resolution with version counters
+
 ## libp2p Protocols
 
 AgentAnycast uses dedicated libp2p protocol streams:
@@ -404,7 +422,7 @@ AgentAnycast uses dedicated libp2p protocol streams:
 | `/agentanycast/a2a/1.0` | A2A envelope exchange (tasks, status, artifacts) |
 | `/agentanycast/card/1.0` | Agent Card exchange on peer connection |
 
-- **Transport:** TCP and QUIC (both supported simultaneously)
+- **Transport:** TCP, QUIC, and WebTransport (all supported simultaneously)
 - **Security:** Noise_XX (mandatory, no plaintext path)
 - **Multiplexing:** yamux (over TCP), native (over QUIC)
 
