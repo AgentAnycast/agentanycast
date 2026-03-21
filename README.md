@@ -127,11 +127,15 @@ from agentanycast.adapters.crewai import serve_crew
 from agentanycast.adapters.langgraph import serve_graph
 from agentanycast.adapters.adk import serve_adk_agent
 from agentanycast.adapters.openai_agents import serve_openai_agent
+from agentanycast.adapters.claude_agent import serve_claude_agent
+from agentanycast.adapters.strands import serve_strands_agent
 
 await serve_crew(my_crew, card=card, relay="...")          # CrewAI
 await serve_graph(my_graph, card=card, relay="...")         # LangGraph
 await serve_adk_agent(my_agent, card=card, relay="...")     # Google ADK
 await serve_openai_agent(my_agent, card=card, relay="...")  # OpenAI Agents SDK
+await serve_claude_agent(prompt_template="...", card=card, relay="...")  # Claude Agent SDK
+await serve_strands_agent(my_agent, card=card, relay="...")              # AWS Strands
 ```
 
 ## Interoperability
