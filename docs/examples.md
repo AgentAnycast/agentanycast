@@ -390,6 +390,59 @@ asyncio.run(main())
 
 Install: `pip install agentanycast[openai-agents]`
 
+## Claude Agent SDK Integration
+
+Expose a Claude Agent SDK agent as a P2P agent.
+
+```python
+import asyncio
+from agentanycast import AgentCard, Skill
+from agentanycast.adapters.claude_agent import serve_claude_agent
+
+card = AgentCard(
+    name="ClaudeSDKAgent",
+    description="An agent powered by Claude Agent SDK",
+    skills=[Skill(id="assist", description="General assistance")],
+)
+
+async def main():
+    await serve_claude_agent(
+        prompt_template="You are a helpful assistant. Respond to: {input}",
+        card=card,
+        relay="...",
+    )
+
+asyncio.run(main())
+```
+
+Install: `pip install agentanycast[claude-agent]`
+
+## AWS Strands Integration
+
+Expose an AWS Strands agent as a P2P agent.
+
+```python
+import asyncio
+from strands import Agent
+from agentanycast import AgentCard, Skill
+from agentanycast.adapters.strands import serve_strands_agent
+
+agent = Agent(model="us.amazon.nova-pro-v1:0")
+
+card = AgentCard(
+    name="StrandsAgent",
+    description="An agent powered by AWS Strands",
+    skills=[Skill(id="assist", description="General assistance")],
+)
+
+async def main():
+    await serve_strands_agent(agent, card=card, relay="...")
+
+asyncio.run(main())
+```
+
+Install: `pip install agentanycast[strands]`
+
 ## MCP Tool Mapping
 
 Convert MCP (Model Context Protocol) tools into A2A skills:
