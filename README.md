@@ -192,6 +192,9 @@ The relay is a **zero-knowledge forwarder** — it only passes encrypted bytes. 
 | **[Deployment Guide](docs/deployment.md)** | Production relay, HTTP bridge, MCP server, metrics, security |
 | **[Protocol Reference](docs/protocol.md)** | Wire format, task lifecycle, 22 RPCs across 3 gRPC services |
 | **[Examples](docs/examples.md)** | Patterns: anycast, adapters, streaming, LLM-powered agents |
+| **[TypeScript SDK Reference](docs/typescript-sdk.md)** | Complete TypeScript API reference |
+| **[FAQ & Troubleshooting](docs/faq.md)** | Common questions and solutions |
+| **[Version Coordination](docs/versioning.md)** | Cross-repo release process and compatibility |
 
 ## Contributing
 
