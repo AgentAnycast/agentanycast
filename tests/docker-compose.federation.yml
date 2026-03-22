@@ -1,0 +1,43 @@
+# Docker Compose overlay: federation tests.
+#
+# Usage:
+#   docker compose -f docker-compose.test.yml -f docker-compose.federation.yml \
+#     up --build --abort-on-container-exit --exit-code-from test-runner
+#
+# Adds a second relay (relay-b) that federates with the primary relay,
+# enabling cross-relay skill discovery tests.
+
+services:
+  relay-b:
+    build:
+      context: ../..
+      dockerfile: agentanycast-relay/Dockerfile.integration
+    command:
+      - --listen
+      - /ip4/0.0.0.0/tcp/4001
+      - --registry-listen
+      - "0.0.0.0:50052"
+      - --registry-ttl
+      - "30s"
+      - --metrics-listen
+      - ":9090"
+      - --federation-peers
+      - "relay:50052"
+      - --log-level
+      - info
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:9090/health || exit 1"]
+      interval: 2s
+      timeout: 5s
+      retries: 10
+    depends_on:
+      relay:
+        condition: service_healthy
+
+  test-runner:
+    environment:
+      - RELAY_B_REGISTRY=relay-b:50052
+      - RELAY_B_HEALTH=http://relay-b:9090
+    depends_on:
+      relay-b:
+        condition: service_healthy

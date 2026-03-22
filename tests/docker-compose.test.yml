@@ -24,10 +24,14 @@ services:
       - "0.0.0.0:50052"
       - --registry-ttl
       - "30s"
+      - --metrics-listen
+      - ":9090"
+      - --api-listen
+      - ":8081"
       - --log-level
       - info
     healthcheck:
-      test: ["CMD-SHELL", "nc -z 127.0.0.1 50052 || exit 1"]
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:9090/health || exit 1"]
       interval: 2s
       timeout: 5s
       retries: 10
@@ -50,6 +54,11 @@ services:
     depends_on:
       relay:
         condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "nc -z 127.0.0.1 50051 || exit 1"]
+      interval: 2s
+      timeout: 5s
+      retries: 10
 
   # ── Node B ─────────────────────────────────────────────────
   node-b:
@@ -58,7 +67,7 @@ services:
       dockerfile: agentanycast-node/Dockerfile.integration
     command:
       - --grpc-listen
-      - tcp://0.0.0.0:50051
+      - tcp://0.0.0.0:50061
       - --log-level
       - info
     environment:
@@ -67,6 +76,11 @@ services:
     depends_on:
       relay:
         condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "nc -z 127.0.0.1 50061 || exit 1"]
+      interval: 2s
+      timeout: 5s
+      retries: 10
 
   # ── Test Runner ────────────────────────────────────────────
   # Multi-stage build: includes relay + node binaries so ALL integration
@@ -77,17 +91,19 @@ services:
       dockerfile: agentanycast-python/Dockerfile.test
     environment:
       - NODE_A_GRPC=node-a:50051
-      - NODE_B_GRPC=node-b:50051
+      - NODE_B_GRPC=node-b:50061
       - RELAY_REGISTRY=relay:50052
+      - RELAY_HEALTH=http://relay:9090
+      - RELAY_API=http://relay:8081
+      - NODE_A_BRIDGE=http://node-a:8080
       - RELAY_BINARY=/usr/local/bin/agentanycast-relay
       - NODE_BINARY=/usr/local/bin/agentanycastd
     depends_on:
       relay:
         condition: service_healthy
       node-a:
-        condition: service_started
+        condition: service_healthy
       node-b:
-        condition: service_started
-    # Give daemons time to bootstrap before running tests.
+        condition: service_healthy
     command: >
-      sh -c "sleep 5 && pytest tests/integration/ -m integration -v --tb=short"
+      pytest tests/integration/ -m integration -v --tb=short

@@ -1,0 +1,51 @@
+# Docker Compose overlay: NATS transport tests.
+#
+# Usage:
+#   docker compose -f docker-compose.test.yml -f docker-compose.nats.yml \
+#     up --build --abort-on-container-exit --exit-code-from test-runner
+#
+# Adds a NATS broker and a third node (node-c) configured to use NATS
+# as its transport layer.
+
+services:
+  nats:
+    image: nats:2.10-alpine
+    command: ["--http_port", "8222"]
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:8222/healthz || exit 1"]
+      interval: 2s
+      timeout: 5s
+      retries: 10
+
+  node-c:
+    build:
+      context: ../..
+      dockerfile: agentanycast-node/Dockerfile.integration
+    command:
+      - --grpc-listen
+      - tcp://0.0.0.0:50051
+      - --nats-broker
+      - nats://nats:4222
+      - --log-level
+      - info
+    environment:
+      - AGENTANYCAST_ENABLE_MDNS=false
+      - AGENTANYCAST_STORE_PATH=/data/store
+    depends_on:
+      relay:
+        condition: service_healthy
+      nats:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "nc -z 127.0.0.1 50051 || exit 1"]
+      interval: 2s
+      timeout: 5s
+      retries: 10
+
+  test-runner:
+    environment:
+      - NODE_C_GRPC=node-c:50051
+      - NATS_URL=nats://nats:4222
+    depends_on:
+      node-c:
+        condition: service_healthy
