@@ -5,8 +5,8 @@
 <h1 align="center">AgentAnycast</h1>
 
 <p align="center">
-  <strong>Decentralized P2P runtime for the A2A protocol.</strong><br>
-  <em>Connect AI agents across any network — no public IP, no VPN, no configuration.</em>
+  <strong>The connection layer for AI agents.</strong><br>
+  <em>Connect AI agents across any network — zero config, encrypted, skill-based routing.</em>
 </p>
 
 <p align="center">
@@ -19,10 +19,11 @@
 
 ---
 
-AgentAnycast implements the [A2A (Agent-to-Agent)](https://github.com/a2aproject/A2A) protocol over [libp2p](https://libp2p.io/) peer-to-peer connections. It gives AI agents the ability to securely find and talk to each other across any network — laptops behind NAT, corporate firewalls, or across the internet — with automatic encryption, NAT traversal, and skill-based discovery.
+AgentAnycast is the **connection layer** for AI agents — it solves discovery, identity, transport, and protocol bridging so that agents can find and talk to each other across any network. Laptops behind NAT, corporate firewalls, or across the internet — with automatic encryption, NAT traversal, and skill-based routing.
 
 ```bash
-pip install agentanycast    # or: npm install agentanycast
+pip install agentanycast    # SDK — build P2P agents in Python or TypeScript
+uvx agentanycast-mcp        # MCP Server — use P2P agents from Claude, Cursor, VS Code, etc.
 ```
 
 ## Quick Start
@@ -151,6 +152,42 @@ AgentAnycast is designed to work with the broader agent ecosystem, not as an iso
 | **W3C DID** | `did:key`, `did:web`, `did:dns` identity + Verifiable Credentials |
 | [**AGNTCY**](https://github.com/agntcy) | Agent directory integration + OASF record conversion |
 
+## MCP Server — Use from Any AI Tool
+
+Don't want to write code? Install the MCP server and use P2P agents directly from Claude Desktop, Cursor, VS Code, or any MCP-compatible AI tool:
+
+```bash
+uvx agentanycast-mcp
+```
+
+Add to your AI tool's config (e.g., Claude Desktop `claude_desktop_config.json`):
+
+```json
+{
+  "mcpServers": {
+    "agentanycast": {
+      "command": "uvx",
+      "args": ["agentanycast-mcp"]
+    }
+  }
+}
+```
+
+Then ask your AI assistant: *"Find agents that can translate Japanese"* or *"Send 'summarize this' to the translate agent"*.
+
+Works with: Claude Desktop/Code, Cursor, VS Code + Copilot, Windsurf, JetBrains AI, Gemini CLI, Amazon Q, Cline, Continue, ChatGPT (HTTP mode), and more. See the [MCP Server docs](https://github.com/AgentAnycast/agentanycast-mcp) for all platform configs.
+
+## Comparison
+
+| Feature | AgentAnycast | Standard A2A | agentgateway | Tailscale Aperture |
+|---------|-------------|-------------|-------------|-----------|
+| NAT Traversal | ✅ Automatic | ❌ Requires public IP | ❌ Requires public IP | ✅ Via DERP relays |
+| Encryption | ✅ E2E through relays (Noise_XX) | TLS (terminates at server) | TLS (proxy decrypts) | ✅ E2E (WireGuard) |
+| Skill-based Routing | ✅ Anycast by capability | ❌ URL-based only | ❌ Static config | ❌ |
+| MCP Server | ✅ Built-in (6 tools) | ❌ | ✅ | ❌ |
+| Decentralized | ✅ P2P + DHT | ❌ Central server | ❌ Central gateway | ❌ Coord server |
+| Setup | `pip install` + 3 lines | HTTP server + public URL | Gateway deployment | Account + client install |
+
 ## Self-Hosted Relay
 
 On a LAN, no relay is needed — agents find each other automatically via mDNS.
@@ -176,9 +213,10 @@ The relay is a **zero-knowledge forwarder** — it only passes encrypted bytes. 
 | Repository | Description |
 |---|---|
 | **[agentanycast](https://github.com/AgentAnycast/agentanycast)** | Documentation, examples, discussions — **start here** |
+| **[agentanycast-mcp](https://github.com/AgentAnycast/agentanycast-mcp)** | MCP server — `uvx agentanycast-mcp` — use from Claude, Cursor, VS Code, etc. |
 | **[agentanycast-python](https://github.com/AgentAnycast/agentanycast-python)** | Python SDK — `pip install agentanycast` |
 | **[agentanycast-ts](https://github.com/AgentAnycast/agentanycast-ts)** | TypeScript SDK — `npm install agentanycast` |
-| **[agentanycast-node](https://github.com/AgentAnycast/agentanycast-node)** | Go daemon — P2P networking, encryption, A2A engine, MCP server |
+| **[agentanycast-node](https://github.com/AgentAnycast/agentanycast-node)** | Go daemon — P2P networking, encryption, A2A engine |
 | **[agentanycast-relay](https://github.com/AgentAnycast/agentanycast-relay)** | Relay server + skill registry + multi-relay federation |
 | **[agentanycast-proto](https://github.com/AgentAnycast/agentanycast-proto)** | Protocol Buffer definitions — single source of truth |
 
