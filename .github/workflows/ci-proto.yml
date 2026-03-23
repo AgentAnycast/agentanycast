@@ -20,7 +20,7 @@ jobs:
     name: Buf Lint
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - uses: bufbuild/buf-setup-action@v1
         with:
@@ -34,7 +34,7 @@ jobs:
     runs-on: ubuntu-latest
     if: github.event_name == 'pull_request'
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
@@ -49,7 +49,7 @@ jobs:
     name: Go Build Check
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - uses: bufbuild/buf-setup-action@v1
         with:
@@ -70,7 +70,7 @@ jobs:
     name: Python Import Check
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - uses: bufbuild/buf-setup-action@v1
         with:
@@ -105,7 +105,7 @@ jobs:
     name: TypeScript Build Check
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - uses: bufbuild/buf-setup-action@v1
         with:
