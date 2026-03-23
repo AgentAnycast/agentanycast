@@ -1,0 +1,43 @@
+syntax = "proto3";
+
+package agentanycast.v1;
+
+option go_package = "github.com/agentanycast/agentanycast-proto/gen/go/agentanycast/v1;agentanycastv1";
+
+// ─────────────────────────────────────────────────────────────
+// Streaming Artifact messages for chunked delivery over libp2p.
+// Used by the /agentanycast/stream/1.0 protocol.
+// ─────────────────────────────────────────────────────────────
+
+// StreamStart initiates a streaming artifact transfer.
+message StreamStart {
+  string task_id = 1;
+  string artifact_id = 2;
+  string artifact_name = 3;
+  string media_type = 4;       // MIME type of the artifact
+  int32 total_chunks = 5;      // 0 = unknown (open-ended stream)
+  map<string, string> metadata = 6;
+}
+
+// StreamChunk carries a single chunk of artifact data.
+message StreamChunk {
+  string task_id = 1;
+  string artifact_id = 2;
+  int32 sequence = 3;          // 0-indexed chunk sequence number
+  bytes data = 4;              // chunk payload
+  bool is_last = 5;            // true if this is the final chunk
+}
+
+// StreamEnd signals completion (or cancellation) of a stream.
+message StreamEnd {
+  string task_id = 1;
+  string artifact_id = 2;
+  StreamEndReason reason = 3;
+}
+
+enum StreamEndReason {
+  STREAM_END_REASON_UNSPECIFIED = 0;
+  STREAM_END_REASON_COMPLETE = 1;
+  STREAM_END_REASON_CANCELED = 2;
+  STREAM_END_REASON_ERROR = 3;
+}

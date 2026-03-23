@@ -1,0 +1,48 @@
+syntax = "proto3";
+
+package agentanycast.v1;
+
+import "google/protobuf/timestamp.proto";
+import "agentanycast/v1/registry_service.proto";
+
+option go_package = "github.com/agentanycast/agentanycast-proto/gen/go/agentanycast/v1;agentanycastv1";
+
+// FederationService enables relay-to-relay skill registry synchronization.
+service FederationService {
+  // SyncRegistrations pulls registration updates from a peer relay.
+  rpc SyncRegistrations(SyncRegistrationsRequest) returns (SyncRegistrationsResponse);
+  // PushRegistrations sends local registration changes to a peer relay.
+  rpc PushRegistrations(PushRegistrationsRequest) returns (PushRegistrationsResponse);
+}
+
+message SyncRegistrationsRequest {
+  string relay_id = 1;
+  google.protobuf.Timestamp since = 2;
+  int32 limit = 3;
+}
+
+message SyncRegistrationsResponse {
+  repeated FederatedRegistration registrations = 1;
+  google.protobuf.Timestamp sync_timestamp = 2;
+}
+
+message PushRegistrationsRequest {
+  string relay_id = 1;
+  repeated FederatedRegistration registrations = 2;
+}
+
+message PushRegistrationsResponse {
+  int32 accepted = 1;
+  int32 rejected = 2;
+}
+
+message FederatedRegistration {
+  string peer_id = 1;
+  string origin_relay_id = 2;
+  repeated SkillInfo skills = 3;
+  string agent_name = 4;
+  string agent_description = 5;
+  google.protobuf.Timestamp registered_at = 6;
+  google.protobuf.Timestamp expires_at = 7;
+  uint64 version = 8;
+}

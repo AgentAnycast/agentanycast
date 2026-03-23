@@ -1,0 +1,84 @@
+syntax = "proto3";
+
+package agentanycast.v1;
+
+option go_package = "github.com/agentanycast/agentanycast-proto/gen/go/agentanycast/v1;agentanycastv1";
+
+import "google/protobuf/timestamp.proto";
+
+// RegistryService is the Skill Registry hosted on the Relay server.
+// Agents register their skills upon connecting to the Relay, and other
+// agents query the registry to discover peers by capability.
+service RegistryService {
+
+  // RegisterSkills registers (or refreshes) the calling agent's skills.
+  rpc RegisterSkills(RegisterSkillsRequest) returns (RegisterSkillsResponse);
+
+  // UnregisterSkills removes specific skills for the calling agent.
+  rpc UnregisterSkills(UnregisterSkillsRequest) returns (UnregisterSkillsResponse);
+
+  // DiscoverBySkill returns agents that offer the requested skill.
+  rpc DiscoverBySkill(DiscoverBySkillRequest) returns (DiscoverBySkillResponse);
+
+  // Heartbeat renews the TTL of a registration without re-sending full data.
+  rpc Heartbeat(HeartbeatRequest) returns (HeartbeatResponse);
+}
+
+// ── Skill Metadata ──────────────────────────────────────────
+
+// SkillInfo describes a single skill for registry purposes.
+message SkillInfo {
+  string skill_id = 1;
+  string description = 2;
+  map<string, string> tags = 3; // optional tags for fine-grained matching
+}
+
+// SkillRegistration represents a registered agent in the registry.
+message SkillRegistration {
+  string peer_id = 1;
+  repeated SkillInfo skills = 2;
+  string agent_name = 3;
+  string agent_description = 4;
+  google.protobuf.Timestamp registered_at = 5;
+  google.protobuf.Timestamp expires_at = 6;
+}
+
+// ── Request / Response Messages ─────────────────────────────
+
+message RegisterSkillsRequest {
+  string peer_id = 1;
+  repeated SkillInfo skills = 2;
+  string agent_name = 3;
+  string agent_description = 4;
+}
+
+message RegisterSkillsResponse {
+  // Server-assigned expiration time for this registration.
+  google.protobuf.Timestamp expires_at = 1;
+}
+
+message UnregisterSkillsRequest {
+  string peer_id = 1;
+  repeated string skill_ids = 2; // empty = unregister all
+}
+
+message UnregisterSkillsResponse {}
+
+message DiscoverBySkillRequest {
+  string skill_id = 1;
+  map<string, string> tags = 2; // optional: filter by tags
+  int32 limit = 3;              // max results (0 = server default)
+  bool federated = 4;           // include federated entries from peer relays
+}
+
+message DiscoverBySkillResponse {
+  repeated SkillRegistration agents = 1;
+}
+
+message HeartbeatRequest {
+  string peer_id = 1;
+}
+
+message HeartbeatResponse {
+  google.protobuf.Timestamp expires_at = 1;
+}

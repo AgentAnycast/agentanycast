@@ -1,0 +1,46 @@
+syntax = "proto3";
+
+package agentanycast.v1;
+
+option go_package = "github.com/agentanycast/agentanycast-proto/gen/go/agentanycast/v1;agentanycastv1";
+
+import "google/protobuf/timestamp.proto";
+
+// PeerInfo describes a connected peer node.
+message PeerInfo {
+  string peer_id = 1;
+  repeated string addresses = 2;
+  ConnectionType connection_type = 3;
+  google.protobuf.Timestamp connected_at = 4;
+}
+
+// ConnectionType indicates how a peer is connected.
+enum ConnectionType {
+  CONNECTION_TYPE_UNSPECIFIED = 0;
+  CONNECTION_TYPE_DIRECT = 1;
+  CONNECTION_TYPE_RELAY = 2;
+}
+
+// NATType indicates the detected NAT configuration.
+enum NATType {
+  NAT_TYPE_UNSPECIFIED = 0;
+  NAT_TYPE_PUBLIC = 1;
+  NAT_TYPE_PRIVATE = 2;
+}
+
+// NodeInfo describes the local node's state.
+message NodeInfo {
+  string peer_id = 1;
+  repeated string listen_addresses = 2;
+  NATType nat_type = 3;
+  int32 connected_peers = 4;
+  google.protobuf.Timestamp started_at = 5;
+  string version = 6;
+}
+
+// ErrorDetail provides structured error information.
+message ErrorDetail {
+  string code = 1;
+  string message = 2;
+  map<string, string> metadata = 3;
+}

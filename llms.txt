@@ -1,0 +1,62 @@
+# AgentAnycast Proto
+
+> Protobuf/gRPC interface definitions and A2A data models for AgentAnycast — the single source of truth for all inter-component communication. Used by the Go daemon, relay, Python SDK, and TypeScript SDK.
+
+## Documentation
+
+- [Protocol Reference](https://github.com/AgentAnycast/agentanycast/blob/main/docs/protocol.md): Wire format, task lifecycle, 16 gRPC RPCs
+- [Architecture](https://github.com/AgentAnycast/agentanycast/blob/main/docs/architecture.md): How proto definitions flow to downstream repos
+
+## Build
+
+```bash
+buf lint                                    # Lint proto files
+buf breaking --against '.git#branch=main'   # Check backward compatibility
+buf generate                                # Generate Go + Python + TypeScript stubs
+```
+
+## Proto Files
+
+All proto files live in `agentanycast/v1/` under package `agentanycast.v1`.
+
+### common.proto
+Shared types: `PeerInfo`, `NodeInfo`, `ConnectionType`, `NATType`.
+
+### a2a_models.proto
+A2A data model: `Task`, `Message`, `Part` (text/data/file), `Artifact`, `TaskStatus`. `A2AEnvelope` with 11 envelope types for task lifecycle (create, update, complete, fail, cancel, etc.) including streaming support.
+
+### agent_card.proto
+`AgentCard` (A2A standard + P2P extension with `did_key`), `Skill` with input/output JSON schemas.
+
+### node_service.proto
+SDK-to-daemon gRPC interface: 16 RPCs covering node management, peer management, task client/server operations, streaming, and discovery.
+
+### streaming.proto
+Chunked artifact delivery: `StreamStart`, `StreamChunk`, `StreamEnd`.
+
+### registry_service.proto
+Relay skill registry: `RegisterSkills`, `UnregisterSkills`, `DiscoverBySkill`, `Heartbeat`.
+
+## Code Generation
+
+Configured in `buf.gen.yaml`:
+- **Go**: `protoc-gen-go` + `protoc-gen-go-grpc` -> `gen/go/`
+- **Python**: `protoc-gen-python` + `protoc-gen-grpc-python` -> `gen/python/`
+- **TypeScript**: `ts-proto` with `grpc-js` output -> `gen/ts/`
+
+Generated output directories are gitignored. Downstream repos vendor the generated stubs.
+
+## Key Concepts
+
+- **Buf v2**: Lint (STANDARD rules) and breaking change detection (FILE level)
+- **Additive-only changes**: Never remove or rename fields; only add new fields/messages
+- **Package**: `agentanycast.v1` — all files share one package
+- **Dependency flow**: proto -> node/relay (Go import with local replace), proto -> python/ts (generated stubs committed in each SDK)
+
+## Related Repositories
+
+- [agentanycast](https://github.com/AgentAnycast/agentanycast): Documentation hub
+- [agentanycast-node](https://github.com/AgentAnycast/agentanycast-node): Go daemon (imports Go stubs)
+- [agentanycast-relay](https://github.com/AgentAnycast/agentanycast-relay): Relay server (imports Go stubs)
+- [agentanycast-python](https://github.com/AgentAnycast/agentanycast-python): Python SDK (vendors Python stubs)
+- [agentanycast-ts](https://github.com/AgentAnycast/agentanycast-ts): TypeScript SDK (vendors TS stubs)

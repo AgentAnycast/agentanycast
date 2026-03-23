@@ -1,0 +1,49 @@
+syntax = "proto3";
+
+package agentanycast.v1;
+
+option go_package = "github.com/agentanycast/agentanycast-proto/gen/go/agentanycast/v1;agentanycastv1";
+
+// AgentCard is the A2A-compatible capability descriptor for an agent node.
+// Standard A2A fields are preserved; P2P extension fields are in the
+// `p2p_extension` submessage.
+message AgentCard {
+  // Standard A2A fields
+  string name = 1;
+  string description = 2;
+  string version = 3;
+  string protocol_version = 4; // e.g. "a2a/0.3"
+  repeated Skill skills = 5;
+
+  // AgentAnycast P2P extension
+  P2PExtension p2p_extension = 10;
+}
+
+// Skill describes a single capability the agent exposes.
+message Skill {
+  string id = 1;
+  string description = 2;
+  // Optional JSON Schema describing the expected input for this skill.
+  string input_schema = 3;
+  // Optional JSON Schema describing the output of this skill.
+  string output_schema = 4;
+}
+
+// P2PExtension contains AgentAnycast-specific addressing information
+// appended to the standard A2A Agent Card.
+message P2PExtension {
+  string peer_id = 1;
+  repeated string supported_transports = 2; // e.g. ["tcp", "quic"]
+  repeated string relay_addresses = 3;
+  // Optional W3C DID (did:key method) derived from the node's Ed25519 public key.
+  // Populated automatically by the daemon. Enables interoperability with
+  // DID-based ecosystems such as ANP.
+  string did_key = 4;
+
+  // Optional did:web identifier for web-based DID resolution.
+  string did_web = 5;
+  // Optional did:dns domain for DNS-based DID resolution.
+  string did_dns = 6;
+  // Optional JSON-encoded Verifiable Credentials.
+  repeated string verifiable_credentials = 7;
+}

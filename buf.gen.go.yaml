@@ -1,0 +1,9 @@
+version: v2
+plugins:
+  # Go code generation only (used by agentanycast-node and agentanycast-relay CI)
+  - remote: buf.build/protocolbuffers/go
+    out: gen/go
+    opt: paths=source_relative
+  - remote: buf.build/grpc/go
+    out: gen/go
+    opt: paths=source_relative

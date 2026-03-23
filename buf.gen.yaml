@@ -1,0 +1,26 @@
+version: v2
+plugins:
+  # Go code generation
+  - remote: buf.build/protocolbuffers/go
+    out: gen/go
+    opt: paths=source_relative
+  - remote: buf.build/grpc/go
+    out: gen/go
+    opt: paths=source_relative
+
+  # Python code generation
+  - remote: buf.build/protocolbuffers/python
+    out: gen/python
+  - remote: buf.build/grpc/python
+    out: gen/python
+
+  # TypeScript code generation (requires: npm install -g ts-proto)
+  # Generates @grpc/grpc-js compatible service stubs.
+  - local: protoc-gen-ts_proto
+    out: gen/ts
+    opt:
+      - outputServices=grpc-js
+      - esModuleInterop=true
+      - env=node
+      - useOptionals=messages
+      - oneof=unions
