@@ -75,7 +75,7 @@ The relay provides three services:
 
 3. **Federation** — gossip-based synchronization across multiple relays for global agent discovery. Uses Last-Writer-Wins conflict resolution.
 
-### Proto Definitions (`agentanycast-proto`)
+### Proto Definitions (`proto/`)
 
 The single source of truth for all interfaces. Contains:
 

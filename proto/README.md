@@ -1,12 +1,12 @@
 # AgentAnycast Proto
 
-**Protocol definitions -- the single source of truth for AgentAnycast.**
+**Protocol definitions — the single source of truth for AgentAnycast.**
 
-[![CI](https://github.com/AgentAnycast/agentanycast-proto/actions/workflows/ci.yml/badge.svg)](https://github.com/AgentAnycast/agentanycast-proto/actions/workflows/ci.yml)
 [![Buf](https://img.shields.io/badge/Buf-STANDARD-4353ff?logo=buf&logoColor=white)](https://buf.build)
-[![License](https://img.shields.io/badge/License-Apache%202.0-blue)](LICENSE)
 
 All cross-component interfaces in the [AgentAnycast](https://github.com/AgentAnycast/agentanycast) ecosystem are defined here as Protocol Buffers. Every downstream repo depends on these definitions.
+
+> This directory was previously a standalone repository (`agentanycast-proto`). It now lives inside the main repo for simpler dependency management.
 
 ## Proto Files
 
@@ -23,16 +23,16 @@ All cross-component interfaces in the [AgentAnycast](https://github.com/AgentAny
 ## Dependency Flow
 
 ```
-                  agentanycast-proto
-                     (this repo)
-                         |
-          +--------------+--------------+
-          |              |              |
-          v              v              v
-   agentanycast-   agentanycast-   agentanycast-
-      node            relay          python / ts
-   (Go: local      (Go: local     (vendored stubs
-    replace)        replace)       in _generated/)
+                    proto/
+                (this directory)
+                       |
+        +--------------+--------------+
+        |              |              |
+        v              v              v
+ agentanycast-   agentanycast-   agentanycast-
+    node            relay          python / ts
+ (Go: local      (Go: local     (vendored stubs
+  replace)        replace)       in _generated/)
 ```
 
 ## Quick Start
@@ -51,6 +51,7 @@ brew install bufbuild/buf/buf
 ### Generate Code
 
 ```bash
+cd proto
 buf generate
 ```
 
@@ -156,4 +157,4 @@ The Agent Card includes a P2P extension for decentralized identity and transport
 
 ## License
 
-[Apache License, Version 2.0](LICENSE)
+[Apache License, Version 2.0](../LICENSE)

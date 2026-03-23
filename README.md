@@ -237,13 +237,12 @@ The relay is a **zero-knowledge forwarder** -- it passes only encrypted bytes. I
 
 | Repository | Language | Description |
 |---|---|---|
-| **[agentanycast](https://github.com/AgentAnycast/agentanycast)** | -- | Documentation, examples, community hub -- **you are here** |
+| **[agentanycast](https://github.com/AgentAnycast/agentanycast)** | -- | Documentation, protocol definitions ([`proto/`](proto/)), examples -- **you are here** |
 | **[agentanycast-mcp](https://github.com/AgentAnycast/agentanycast-mcp)** | Python | MCP server for Claude, Cursor, VS Code, and 13+ AI tools |
 | **[agentanycast-python](https://github.com/AgentAnycast/agentanycast-python)** | Python | Python SDK -- `pip install agentanycast` |
 | **[agentanycast-ts](https://github.com/AgentAnycast/agentanycast-ts)** | TypeScript | TypeScript SDK -- `npm install agentanycast` |
 | **[agentanycast-node](https://github.com/AgentAnycast/agentanycast-node)** | Go | Core daemon -- P2P networking, encryption, A2A engine |
 | **[agentanycast-relay](https://github.com/AgentAnycast/agentanycast-relay)** | Go | Relay server + skill registry + multi-relay federation |
-| **[agentanycast-proto](https://github.com/AgentAnycast/agentanycast-proto)** | Protobuf | gRPC and A2A data model definitions |
 
 ## Documentation
 

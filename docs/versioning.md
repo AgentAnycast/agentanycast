@@ -8,7 +8,7 @@ Each repository follows [Semantic Versioning](https://semver.org/) independently
 
 | Repository | Current | Versioning |
 |---|---|---|
-| agentanycast-proto | v0.x.y | Protobuf API contract |
+| agentanycast (`proto/`) | v0.x.y | Protobuf API contract |
 | agentanycast-node | v0.x.y | Go daemon binary |
 | agentanycast-relay | v0.x.y | Relay server binary |
 | agentanycast-python | v0.x.y | Python SDK (PyPI) |
@@ -19,7 +19,7 @@ Tags follow the format `v{major}.{minor}.{patch}` (e.g., `v0.3.1`).
 
 ## Proto as the Coordination Point
 
-The `agentanycast-proto` repository is the single source of truth for all gRPC service definitions and A2A data models. Breaking changes to proto files require a coordinated release across all downstream repositories.
+The `proto/` directory in the main repo is the single source of truth for all gRPC service definitions and A2A data models. Breaking changes to proto files require a coordinated release across all downstream repositories.
 
 **Proto compatibility rules:**
 
@@ -32,7 +32,7 @@ The `agentanycast-proto` repository is the single source of truth for all gRPC s
 When a change touches the proto definitions, releases must happen in this order:
 
 ```
-agentanycast-proto
+proto/ (main repo)
        │
        ├──► agentanycast-node
        │
@@ -43,7 +43,7 @@ agentanycast-proto
        └──► agentanycast-ts
 ```
 
-1. **Proto** — publish the new proto version first.
+1. **Proto** — merge proto changes to `main` in the main repo first.
 2. **Node / Relay** — update the Go module's `go.mod` replace directive, regenerate stubs, release.
 3. **Python / TypeScript SDKs** — regenerate stubs from the new proto, update vendored files, release.
 

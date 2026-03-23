@@ -2,3 +2,7 @@
 *.swp
 *.swo
 *~
+
+# Proto code generation output
+proto/gen/
+proto/node_modules/

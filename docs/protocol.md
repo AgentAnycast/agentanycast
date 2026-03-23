@@ -17,7 +17,7 @@ AgentAnycast implements the [A2A (Agent-to-Agent) protocol](https://github.com/a
 
 ## Proto Definitions
 
-All types are defined in the `agentanycast.v1` proto package. Source files live in [`agentanycast-proto`](https://github.com/AgentAnycast/agentanycast-proto).
+All types are defined in the `agentanycast.v1` proto package. Source files live in [`proto/`](../proto/).
 
 | File | Contents |
 |---|---|

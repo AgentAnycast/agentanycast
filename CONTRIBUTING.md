@@ -15,7 +15,7 @@ AgentAnycast is organized as multiple repositories. Choose the one that matches 
 | Fix/improve the P2P daemon | [agentanycast-node](https://github.com/AgentAnycast/agentanycast-node) | Go 1.25+ | `make build && make test` |
 | Fix/improve the Python SDK | [agentanycast-python](https://github.com/AgentAnycast/agentanycast-python) | Python 3.10+ | `pip install -e ".[dev]" && pytest` |
 | Fix/improve the TypeScript SDK | [agentanycast-ts](https://github.com/AgentAnycast/agentanycast-ts) | TypeScript | `npm install && npm test` |
-| Fix/improve Protobuf definitions | [agentanycast-proto](https://github.com/AgentAnycast/agentanycast-proto) | Protobuf | `buf lint && buf generate` |
+| Fix/improve Protobuf definitions | [agentanycast/proto](https://github.com/AgentAnycast/agentanycast/tree/main/proto) | Protobuf | `cd proto && buf lint && buf generate` |
 | Fix/improve the Relay server | [agentanycast-relay](https://github.com/AgentAnycast/agentanycast-relay) | Go 1.25+ | `go build ./cmd/relay && go test ./...` |
 | Improve docs or report bugs | [agentanycast](https://github.com/AgentAnycast/agentanycast) | Markdown | — |
 
@@ -96,11 +96,11 @@ refactor: extract task state machine into separate module
 
 Some changes span multiple repositories (e.g., adding a new RPC method):
 
-1. Start with `agentanycast-proto` — define the new interface
+1. Start with [`proto/`](proto/) in the main repo — define the new interface
 2. Update `agentanycast-node` — implement the server side
 3. Update `agentanycast-python` and/or `agentanycast-ts` — implement the client side
 
-Open linked PRs in each repository and reference them in your descriptions.
+Proto changes are submitted as PRs to the main repo. Downstream changes go to their respective repos with linked references.
 
 ## Reporting Security Issues
 
