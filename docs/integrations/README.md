@@ -17,6 +17,7 @@ guide for installation, startup modes, and available tools.
 | [Dify](dify.md) | Low-code AI agent platform | MCP plugin (Streamable HTTP) |
 | [n8n](n8n.md) | Workflow automation | MCP Client node (stdio or HTTP) |
 | [Langflow](langflow.md) | Visual agent builder | MCP tools component (stdio or HTTP) |
+| [agentgateway](agentgateway.md) | AI-native gateway (LF project) | A2A/MCP backend (HTTP Bridge) |
 
 ## AI IDE Support
 
