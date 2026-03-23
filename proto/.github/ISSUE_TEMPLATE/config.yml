@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Bug Report
+    url: https://github.com/AgentAnycast/agentanycast/issues/new?template=bug_report.yml
+    about: Report bugs in the main AgentAnycast issue tracker
+  - name: Feature Request
+    url: https://github.com/AgentAnycast/agentanycast/issues/new?template=feature_request.yml
+    about: Suggest features in the main AgentAnycast issue tracker
+  - name: Discussions
+    url: https://github.com/AgentAnycast/agentanycast/discussions
+    about: Ask questions, share ideas, or show what you've built

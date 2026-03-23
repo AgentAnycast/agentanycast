@@ -1,0 +1,49 @@
+#!/usr/bin/env bash
+# Pre-push hook: runs the same checks as CI before allowing push.
+# Install: git config core.hooksPath .githooks
+set -euo pipefail
+
+# Ensure common tool paths are available
+export PATH="/opt/homebrew/bin:/usr/local/bin:$HOME/.local/bin:$HOME/go/bin:$PATH" 2>/dev/null || true
+
+echo "🔍 Running pre-push checks (mirroring CI)..."
+echo ""
+
+FAILED=0
+
+# 1. Buf lint
+echo "▶ [1/2] buf lint..."
+if command -v buf &>/dev/null; then
+  if buf lint ; then
+    echo "✅ buf lint passed"
+  else
+    echo "❌ buf lint failed"
+    FAILED=1
+  fi
+else
+  echo "⚠️  buf not installed, skipping"
+fi
+echo ""
+
+# 2. Buf breaking change detection
+echo "▶ [2/2] buf breaking..."
+if command -v buf &>/dev/null; then
+  if buf breaking --against '.git#branch=main' ; then
+    echo "✅ buf breaking passed"
+  else
+    echo "❌ buf breaking change detected"
+    FAILED=1
+  fi
+else
+  echo "⚠️  buf not installed, skipping"
+fi
+echo ""
+
+if [ $FAILED -ne 0 ]; then
+  echo "❌ Pre-push checks FAILED. Push aborted."
+  echo "   Fix the issues above and try again."
+  echo "   To skip (emergency): git push --no-verify"
+  exit 1
+fi
+
+echo "✅ All pre-push checks passed."

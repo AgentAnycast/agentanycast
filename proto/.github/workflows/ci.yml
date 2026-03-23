@@ -1,0 +1,119 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  buf-lint:
+    name: Buf Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: bufbuild/buf-setup-action@v1
+        with:
+          github_token: ${{ github.token }}
+
+      - name: Buf lint
+        run: buf lint
+
+  buf-breaking:
+    name: Buf Breaking Change Detection
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: bufbuild/buf-setup-action@v1
+        with:
+          github_token: ${{ github.token }}
+
+      - name: Buf breaking
+        run: buf breaking --against '.git#branch=main'
+
+  go-build:
+    name: Go Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: bufbuild/buf-setup-action@v1
+        with:
+          github_token: ${{ github.token }}
+
+      - name: Generate code from proto
+        run: buf generate
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - name: Verify generated code compiles
+        run: go build ./...
+
+  python-import:
+    name: Python Import Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: bufbuild/buf-setup-action@v1
+        with:
+          github_token: ${{ github.token }}
+
+      - name: Generate code from proto
+        run: buf generate
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: pip install grpcio grpcio-tools protobuf
+
+      - name: Verify generated Python stubs import correctly
+        run: |
+          cd gen/python
+          python -c "
+          from agentanycast.v1 import common_pb2
+          from agentanycast.v1 import a2a_models_pb2
+          from agentanycast.v1 import agent_card_pb2
+          from agentanycast.v1 import node_service_pb2
+          from agentanycast.v1 import streaming_pb2
+          from agentanycast.v1 import registry_service_pb2
+          from agentanycast.v1 import node_service_pb2_grpc
+          from agentanycast.v1 import registry_service_pb2_grpc
+          print('All Python stubs import successfully')
+          "
+
+  ts-build:
+    name: TypeScript Build Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: bufbuild/buf-setup-action@v1
+        with:
+          github_token: ${{ github.token }}
+
+      - name: Generate code from proto
+        run: buf generate
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install dependencies
+        run: npm install && npm install typescript @grpc/grpc-js @grpc/proto-loader
+
+      - name: Verify generated TypeScript compiles
+        run: npx tsc --noEmit --strict --esModuleInterop --module nodenext --moduleResolution nodenext gen/ts/agentanycast/v1/*.ts

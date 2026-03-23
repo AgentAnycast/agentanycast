@@ -1,0 +1,276 @@
+syntax = "proto3";
+
+package agentanycast.v1;
+
+option go_package = "github.com/agentanycast/agentanycast-proto/gen/go/agentanycast/v1;agentanycastv1";
+
+import "agentanycast/v1/common.proto";
+import "agentanycast/v1/agent_card.proto";
+import "agentanycast/v1/a2a_models.proto";
+import "agentanycast/v1/streaming.proto";
+import "agentanycast/v1/registry_service.proto";
+
+// NodeService is the gRPC interface between the Python SDK and the Go Daemon.
+// It runs over a Unix Domain Socket for local IPC.
+service NodeService {
+
+  // ── Node Management ────────────────────────────────────────
+
+  // GetNodeInfo returns the local node's PeerID, addresses, NAT type, etc.
+  rpc GetNodeInfo(GetNodeInfoRequest) returns (GetNodeInfoResponse);
+
+  // SetAgentCard sets or updates this node's A2A Agent Card.
+  rpc SetAgentCard(SetAgentCardRequest) returns (SetAgentCardResponse);
+
+  // ── Peer Management ────────────────────────────────────────
+
+  // ConnectPeer initiates a connection to a remote peer by PeerID.
+  // The daemon will attempt direct connection, then relay.
+  rpc ConnectPeer(ConnectPeerRequest) returns (ConnectPeerResponse);
+
+  // ListPeers returns all currently connected peers.
+  rpc ListPeers(ListPeersRequest) returns (ListPeersResponse);
+
+  // GetPeerCard retrieves the Agent Card of a connected peer.
+  rpc GetPeerCard(GetPeerCardRequest) returns (GetPeerCardResponse);
+
+  // ── Task Operations (Client Mode) ─────────────────────────
+
+  // SendTask sends an A2A Task to a remote agent.
+  // Supports three addressing modes: peer_id, skill_id (anycast), or url (HTTP bridge).
+  rpc SendTask(SendTaskRequest) returns (SendTaskResponse);
+
+  // GetTask retrieves the current state of a task.
+  rpc GetTask(GetTaskRequest) returns (GetTaskResponse);
+
+  // CancelTask requests cancellation of a task.
+  rpc CancelTask(CancelTaskRequest) returns (CancelTaskResponse);
+
+  // SubscribeTaskUpdates streams status updates for a specific task.
+  rpc SubscribeTaskUpdates(SubscribeTaskUpdatesRequest) returns (stream SubscribeTaskUpdatesResponse);
+
+  // ── Task Operations (Server Mode) ─────────────────────────
+
+  // SubscribeIncomingTasks streams new task requests from remote agents.
+  rpc SubscribeIncomingTasks(SubscribeIncomingTasksRequest) returns (stream SubscribeIncomingTasksResponse);
+
+  // UpdateTaskStatus updates the status of a task this node is processing.
+  rpc UpdateTaskStatus(UpdateTaskStatusRequest) returns (UpdateTaskStatusResponse);
+
+  // CompleteTask marks a task as completed with artifacts.
+  rpc CompleteTask(CompleteTaskRequest) returns (CompleteTaskResponse);
+
+  // FailTask marks a task as failed with an error.
+  rpc FailTask(FailTaskRequest) returns (FailTaskResponse);
+
+  // ── Streaming (v0.2) ──────────────────────────────────────
+
+  // SubscribeTaskStream receives streaming artifact chunks for a task.
+  rpc SubscribeTaskStream(SubscribeTaskStreamRequest) returns (stream SubscribeTaskStreamResponse);
+
+  // SendStreamingArtifact sends streaming artifact chunks from the server agent.
+  rpc SendStreamingArtifact(stream SendStreamingArtifactRequest) returns (SendStreamingArtifactResponse);
+
+  // ── Discovery (v0.2) ──────────────────────────────────────
+
+  // Discover finds agents that offer a specific skill via the Relay registry.
+  rpc Discover(DiscoverRequest) returns (DiscoverResponse);
+}
+
+// ── Node Management Messages ───────────────────────────────
+
+// StartNodeRequest configures the daemon at startup time.
+// SDKs populate this before launching the daemon process.
+message StartNodeRequest {
+  // Agent card to register on start.
+  AgentCard card = 1;
+
+  // Relay server multiaddr for cross-network communication.
+  string relay = 2;
+
+  // Path to the libp2p identity key file.
+  string key_path = 3;
+
+  // gRPC listen address (e.g., "unix:///tmp/daemon.sock").
+  string grpc_listen = 4;
+
+  // Log level for the daemon (e.g., "info", "debug").
+  string log_level = 5;
+
+  // Optional transport specification (e.g., "nats://broker:4222", "auto", "libp2p").
+  // When empty, defaults to libp2p.
+  string transport = 10;
+
+  // Optional namespace for multi-tenant isolation.
+  // When empty, defaults to "default".
+  string namespace = 11;
+}
+
+// StartNodeResponse is returned after the daemon starts successfully.
+message StartNodeResponse {
+  NodeInfo node_info = 1;
+}
+
+message GetNodeInfoRequest {}
+
+message GetNodeInfoResponse {
+  NodeInfo node_info = 1;
+}
+
+message SetAgentCardRequest {
+  AgentCard card = 1;
+}
+
+message SetAgentCardResponse {}
+
+// ── Peer Management Messages ───────────────────────────────
+
+message ConnectPeerRequest {
+  string peer_id = 1;
+  // Optional: multiaddrs to try. If empty, uses relay/DHT for discovery.
+  repeated string addresses = 2;
+}
+
+message ConnectPeerResponse {
+  PeerInfo peer_info = 1;
+}
+
+message ListPeersRequest {}
+
+message ListPeersResponse {
+  repeated PeerInfo peers = 1;
+}
+
+message GetPeerCardRequest {
+  string peer_id = 1;
+}
+
+message GetPeerCardResponse {
+  AgentCard card = 1;
+}
+
+// ── Task Client Messages ───────────────────────────────────
+
+message SendTaskRequest {
+  // Target addressing — exactly one must be set.
+  oneof target {
+    string peer_id = 1;     // Direct: send to a specific PeerID.
+    string skill_id = 2;    // Anycast: route by capability.
+    string url = 3;         // HTTP Bridge: call an external HTTP A2A agent.
+  }
+  Message message = 10;
+  map<string, string> metadata = 11;
+
+  // Transport hint for multi-transport routing (v0.8).
+  // When set, the daemon prefers the specified transport for delivery.
+  // Examples: "nats://broker:4222", "ws://gateway:8080", "auto" (default).
+  // If empty or "auto", the daemon selects the best transport automatically.
+  string transport_hint = 12;
+}
+
+message SendTaskResponse {
+  Task task = 1;
+}
+
+message GetTaskRequest {
+  string task_id = 1;
+}
+
+message GetTaskResponse {
+  Task task = 1;
+}
+
+message CancelTaskRequest {
+  string task_id = 1;
+}
+
+message CancelTaskResponse {
+  Task task = 1;
+}
+
+message SubscribeTaskUpdatesRequest {
+  string task_id = 1;
+}
+
+message SubscribeTaskUpdatesResponse {
+  string task_id = 1;
+  TaskStatus status = 2;
+  Message message = 3;       // optional status message
+  repeated Artifact artifacts = 4; // populated on completion
+}
+
+// ── Task Server Messages ───────────────────────────────────
+
+message SubscribeIncomingTasksRequest {}
+
+message SubscribeIncomingTasksResponse {
+  Task task = 1;
+  AgentCard sender_card = 2; // card of the agent that sent the task
+}
+
+message UpdateTaskStatusRequest {
+  string task_id = 1;
+  TaskStatus status = 2;
+  Message message = 3; // optional accompanying message
+}
+
+message UpdateTaskStatusResponse {}
+
+message CompleteTaskRequest {
+  string task_id = 1;
+  repeated Artifact artifacts = 2;
+  Message message = 3; // optional final message
+}
+
+message CompleteTaskResponse {}
+
+message FailTaskRequest {
+  string task_id = 1;
+  string error_message = 2;
+}
+
+message FailTaskResponse {}
+
+// ── Streaming Messages (v0.2) ──────────────────────────────
+
+message SubscribeTaskStreamRequest {
+  string task_id = 1;
+}
+
+message SubscribeTaskStreamResponse {
+  oneof event {
+    StreamStart stream_start = 1;
+    StreamChunk stream_chunk = 2;
+    StreamEnd stream_end = 3;
+  }
+}
+
+message SendStreamingArtifactRequest {
+  oneof event {
+    StreamStart stream_start = 1;
+    StreamChunk stream_chunk = 2;
+    StreamEnd stream_end = 3;
+  }
+}
+
+message SendStreamingArtifactResponse {}
+
+// ── Discovery Messages (v0.2) ──────────────────────────────
+
+message DiscoverRequest {
+  string skill_id = 1;
+  map<string, string> tags = 2; // optional tag filters
+  int32 limit = 3;              // max results (0 = default)
+}
+
+message DiscoverResponse {
+  repeated DiscoveredAgent agents = 1;
+}
+
+// DiscoveredAgent represents an agent found via capability discovery.
+message DiscoveredAgent {
+  string peer_id = 1;
+  string agent_name = 2;
+  string agent_description = 3;
+  repeated SkillInfo skills = 4;
+}

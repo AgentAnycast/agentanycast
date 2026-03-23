@@ -1,0 +1,94 @@
+# AgentAnycast Proto
+
+Protobuf/gRPC interface definitions for AgentAnycast. Single source of truth for all data models and RPC interfaces across the Go daemon, relay, Python SDK, and TypeScript SDK.
+
+## Architecture
+
+- All proto files under `agentanycast/v1/` in package `agentanycast.v1`
+- Buf v2 for linting, breaking change detection, and code generation
+- Generated stubs output to `gen/` (gitignored); downstream repos vendor their own copies
+- Three codegen targets: Go, Python, TypeScript
+
+## Directory Structure
+
+```
+agentanycast/
+  v1/
+    common.proto           # PeerInfo, NodeInfo, ConnectionType, NATType
+    a2a_models.proto       # Task, Message, Part, Artifact, A2AEnvelope (11 types)
+    agent_card.proto       # AgentCard, Skill
+    node_service.proto     # 16 RPCs: node/peer mgmt, task client/server, streaming, discovery
+    streaming.proto        # StreamStart, StreamChunk, StreamEnd
+    registry_service.proto # RegisterSkills, UnregisterSkills, DiscoverBySkill, Heartbeat
+gen/
+  go/                      # Generated Go stubs (gitignored)
+  python/                  # Generated Python stubs (gitignored)
+  ts/                      # Generated TypeScript stubs (gitignored)
+buf.yaml                   # Buf v2 config: lint rules, breaking change config
+buf.gen.yaml               # Code generation config: Go, Python, TypeScript plugins
+```
+
+## Common Patterns
+
+### Adding a new field
+
+```protobuf
+message Task {
+  string id = 1;
+  TaskStatus status = 2;
+  // Add new fields with the next available number
+  string new_field = 15;  // Never reuse or skip numbers
+}
+```
+
+### Adding a new RPC
+
+```protobuf
+service NodeService {
+  // Existing RPCs...
+
+  // Add new RPC
+  rpc NewMethod(NewMethodRequest) returns (NewMethodResponse) {}
+}
+
+message NewMethodRequest {
+  string param = 1;
+}
+
+message NewMethodResponse {
+  string result = 1;
+}
+```
+
+### Adding a new envelope type
+
+```protobuf
+enum EnvelopeType {
+  // Existing types...
+  NEW_TYPE = 12;  // Use next available number
+}
+
+message A2AEnvelope {
+  oneof payload {
+    // Existing payloads...
+    NewTypePayload new_type = 13;
+  }
+}
+```
+
+## Key Rules
+
+- **Never remove or rename fields** — only additive changes allowed
+- **Never reuse field numbers** — even if the old field is deprecated
+- **Buf lint**: STANDARD rules enforced (field naming, package consistency, etc.)
+- **Buf breaking**: FILE-level detection against `main` branch
+- **Package**: always `agentanycast.v1`
+- **Naming**: snake_case for fields, PascalCase for messages/enums, UPPER_SNAKE for enum values
+
+## Build & Validate
+
+```bash
+buf lint                                    # Lint all proto files
+buf breaking --against '.git#branch=main'   # Check backward compatibility
+buf generate                                # Generate Go + Python + TS stubs
+```
