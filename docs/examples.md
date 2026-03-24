@@ -1,5 +1,7 @@
 # Examples
 
+For runnable code, see the [examples directory](../examples/) with step-by-step READMEs.
+
 Practical patterns for building agents with AgentAnycast.
 
 ## Basic Echo Agent

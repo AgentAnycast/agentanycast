@@ -2,6 +2,17 @@
 
 Common issues and their solutions when running AgentAnycast components.
 
+### Enable verbose logging
+
+For any CLI command, pass `--verbose` (or `-v`) to see daemon startup logs, gRPC calls, and detailed error information:
+
+```bash
+agentanycast --verbose demo
+agentanycast --verbose send 12D3KooW... "Hello!"
+```
+
+This is especially useful when diagnosing daemon startup failures or connection issues.
+
 ## Connection Issues
 
 ### "Connection refused" when starting the daemon

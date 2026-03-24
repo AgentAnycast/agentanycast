@@ -8,6 +8,13 @@ The Python SDK provides a Click-based CLI for interacting with the AgentAnycast 
 pip install agentanycast
 ```
 
+### Global Options
+
+| Flag | Description |
+|------|-------------|
+| `--verbose`, `-v` | Enable debug logging. Shows daemon startup logs, gRPC calls, and detailed error information. |
+| `--version` | Print the SDK version and exit. |
+
 ### `agentanycast --version`
 
 Print the SDK version and exit.
@@ -244,6 +251,159 @@ agentanycast mcp --relay /ip4/203.0.113.10/tcp/4001/p2p/12D3KooW...
   }
 }
 ```
+
+**Quick setup with install.sh:**
+
+The standalone `agentanycast-mcp` package also provides an auto-detect install script that configures supported AI tools automatically:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/AgentAnycast/agentanycast-mcp/main/install.sh | bash
+```
+
+---
+
+## TypeScript SDK CLI (`agentanycast-ts`)
+
+The TypeScript SDK includes a CLI mirroring the Python SDK's functionality. Install it with:
+
+```bash
+npm install -g agentanycast
+```
+
+Or use without installing globally:
+
+```bash
+npx agentanycast-ts <command>
+```
+
+### Global Options
+
+| Flag | Description |
+|------|-------------|
+| `--verbose`, `-v` | Enable debug logging. Shows daemon startup logs, gRPC calls, and detailed error information. |
+| `--version` | Print the SDK version and exit. |
+
+---
+
+### `agentanycast-ts demo`
+
+Start a demo echo agent that responds to any incoming task by echoing back the input message.
+
+```bash
+agentanycast-ts demo [OPTIONS]
+```
+
+**Options:**
+
+| Flag | Default | Description |
+|------|---------|-------------|
+| `--relay TEXT` | None | Relay server multiaddr for cross-network connectivity |
+| `--home TEXT` | `~/.agentanycast` | Data directory for daemon state and keys |
+| `--verbose`, `-v` | False | Enable debug logging |
+
+**Example:**
+
+```bash
+agentanycast-ts demo
+agentanycast-ts demo --relay /ip4/203.0.113.10/tcp/4001/p2p/12D3KooW...
+```
+
+---
+
+### `agentanycast-ts discover`
+
+Discover agents offering a specific skill on the network.
+
+```bash
+agentanycast-ts discover SKILL [OPTIONS]
+```
+
+**Arguments:**
+
+| Argument | Required | Description |
+|----------|----------|-------------|
+| `SKILL` | Yes | The skill ID to search for |
+
+**Options:**
+
+| Flag | Default | Description |
+|------|---------|-------------|
+| `--relay TEXT` | None | Relay server multiaddr |
+| `--home TEXT` | `~/.agentanycast` | Data directory |
+| `--verbose`, `-v` | False | Enable debug logging |
+
+**Example:**
+
+```bash
+agentanycast-ts discover translate
+agentanycast-ts discover echo --relay /ip4/203.0.113.10/tcp/4001/p2p/12D3KooW...
+```
+
+---
+
+### `agentanycast-ts send`
+
+Send a task to a remote agent and print the response.
+
+```bash
+agentanycast-ts send TARGET MESSAGE [OPTIONS]
+```
+
+**Arguments:**
+
+| Argument | Required | Description |
+|----------|----------|-------------|
+| `TARGET` | Yes | Peer ID of the target agent |
+| `MESSAGE` | Yes | Text message to send |
+
+**Options:**
+
+| Flag | Default | Description |
+|------|---------|-------------|
+| `--relay TEXT` | None | Relay server multiaddr |
+| `--home TEXT` | `~/.agentanycast` | Data directory |
+| `--verbose`, `-v` | False | Enable debug logging |
+
+**Example:**
+
+```bash
+agentanycast-ts send 12D3KooWA1b2C3d4... "Hello, agent!"
+```
+
+---
+
+### `agentanycast-ts status`
+
+Show the local node status, including the Peer ID and connected peers.
+
+```bash
+agentanycast-ts status [OPTIONS]
+```
+
+**Options:**
+
+| Flag | Default | Description |
+|------|---------|-------------|
+| `--relay TEXT` | None | Relay server multiaddr |
+| `--home TEXT` | `~/.agentanycast` | Data directory |
+| `--verbose`, `-v` | False | Enable debug logging |
+
+---
+
+### `agentanycast-ts info`
+
+Show version and configuration information.
+
+```bash
+agentanycast-ts info [OPTIONS]
+```
+
+**Options:**
+
+| Flag | Default | Description |
+|------|---------|-------------|
+| `--home TEXT` | `~/.agentanycast` | Data directory |
+| `--verbose`, `-v` | False | Enable debug logging |
 
 ---
 

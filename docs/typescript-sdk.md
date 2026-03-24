@@ -298,6 +298,20 @@ const node = new Node({
 });
 ```
 
+## CLI
+
+The TypeScript SDK includes a CLI for quick experimentation:
+
+```bash
+agentanycast-ts demo                        # Start an echo agent
+agentanycast-ts discover translate          # Find agents by skill
+agentanycast-ts send 12D3KooW... "Hello!"   # Send a task
+agentanycast-ts status                      # Check node status
+agentanycast-ts info                        # Show version info
+```
+
+All commands support `--relay`, `--home`, and `--verbose` flags. Install globally with `npm install -g agentanycast` or use `npx agentanycast-ts <command>`.
+
 ## Development
 
 ```bash

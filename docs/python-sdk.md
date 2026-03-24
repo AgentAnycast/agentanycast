@@ -35,6 +35,7 @@ Node(
 | `daemon_bin` | Name of daemon binary to find on PATH | `agentanycastd` |
 | `daemon_path` | Absolute path to daemon binary | Auto-download |
 | `home` | Data directory for daemon state | `~/.agentanycast` |
+| `status_callback` | Optional callback for progress messages (daemon download/startup). | `None` |
 
 ### Usage as Async Context Manager
 
@@ -688,12 +689,14 @@ agents = await directory.search("translation")
 
 ## CLI
 
-The SDK includes a command-line interface:
+The SDK includes a command-line interface. Pass `--verbose` (or `-v`) before any command to enable debug logging.
 
 ```bash
-agentanycast demo [--relay ADDR] [--home DIR]  # Start an echo agent
-agentanycast discover SKILL [-t key=value]     # Find agents by skill
-agentanycast send PEER_ID MESSAGE              # Send a task
-agentanycast status                            # Show node status
-agentanycast info                              # Version & config info
+agentanycast [--verbose] demo [--relay ADDR] [--home DIR]  # Start an echo agent
+agentanycast [--verbose] discover SKILL [-t key=value]     # Find agents by skill
+agentanycast [--verbose] send PEER_ID MESSAGE              # Send a task
+agentanycast [--verbose] status                            # Show node status
+agentanycast [--verbose] info                              # Version & config info
 ```
+
+All commands produce enhanced colored output for improved readability.

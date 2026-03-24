@@ -4,26 +4,11 @@ AgentAnycast uses a **sidecar architecture** to bring decentralized P2P communic
 
 ## Overview
 
-```
-┌──────────────────────────────────────────────────────────────────┐
-│                        Your Machine                              │
-│                                                                  │
-│  ┌─────────────────────┐      ┌────────────────────────────────┐ │
-│  │  Your Python App    │      │     agentanycastd (daemon)     │ │
-│  │                     │      │                                │ │
-│  │  ┌───────────────┐  │ gRPC │  ┌──────┐  ┌───────────────┐  │ │
-│  │  │ agentanycast   │  │ over │  │Engine│  │  libp2p Host  │  │ │
-│  │  │ SDK (Python)  │──┼──UDS─┼──│(A2A) │  │ TCP/QUIC/mDNS │──┼──► Network
-│  │  └───────────────┘  │      │  └──────┘  └───────────────┘  │ │
-│  │                     │      │  ┌──────┐  ┌───────────────┐  │ │
-│  │  - AgentCard        │      │  │Router│  │  BoltDB Store │  │ │
-│  │  - @on_task handler │      │  └──────┘  └───────────────┘  │ │
-│  │  - send_task()      │      │  ┌──────┐  ┌───────────────┐  │ │
-│  │  - discover()       │      │  │Bridge│  │   Metrics     │  │ │
-│  └─────────────────────┘      │  └──────┘  └───────────────┘  │ │
-│                               └────────────────────────────────┘ │
-└──────────────────────────────────────────────────────────────────┘
-```
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="assets/architecture.svg">
+  <source media="(prefers-color-scheme: light)" srcset="assets/architecture-light.svg">
+  <img src="assets/architecture.svg" alt="AgentAnycast Architecture" width="100%">
+</picture>
 
 **Why a sidecar?** The networking layer (libp2p, NAT traversal, Noise encryption) is complex and performance-sensitive. Writing it in Go and exposing it via gRPC lets the Python SDK stay thin and simple while the daemon handles the hard parts. This architecture already supports multiple SDKs — Python and TypeScript are available today, with more languages possible by adding a gRPC client.
 

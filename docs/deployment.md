@@ -246,6 +246,16 @@ cache_ttl = "30s"
 
 The daemon can run as an MCP (Model Context Protocol) server for AI tool integration.
 
+### Quick Setup with install.sh
+
+The MCP server package includes an auto-detect install script:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/AgentAnycast/agentanycast-mcp/main/install.sh | bash
+```
+
+The script detects installed AI tools (Claude Desktop, Cursor, VS Code, Windsurf, Gemini CLI, Amazon Q) and configures them automatically.
+
 ### stdio mode (Claude Desktop, Cursor, VS Code, Gemini CLI)
 
 ```bash
