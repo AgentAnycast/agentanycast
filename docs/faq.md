@@ -1,6 +1,36 @@
 # Frequently Asked Questions
 
-Common questions about AgentAnycast — architecture, networking, and day-to-day usage.
+Common questions about AgentAnycast -- architecture, networking, and day-to-day usage.
+
+## Start Here
+
+### I just installed agentanycast. What do I do next?
+
+Run the built-in demo:
+
+```bash
+agentanycast demo
+```
+
+Then open another terminal and send it a message (paste the Peer ID from the demo output):
+
+```bash
+agentanycast send <PEER_ID> "Hello!"
+```
+
+See [Getting Started](getting-started.md) for the full walkthrough.
+
+### Which SDK should I use -- Python or TypeScript?
+
+Both share the same daemon, protocol, and network. Choose based on your stack:
+- **Python** -- more framework adapters (CrewAI, LangGraph, Google ADK, OpenAI Agents, Claude Agent SDK, AWS Strands)
+- **TypeScript** -- native Node.js integration
+
+### Can I use this with my existing agent framework?
+
+Yes. The Python SDK has adapters for CrewAI, LangGraph, Google ADK, OpenAI Agents SDK, Claude Agent SDK, and AWS Strands. Each requires one function call to turn your existing agent into a P2P agent. See [examples](../examples/).
+
+---
 
 ## General
 

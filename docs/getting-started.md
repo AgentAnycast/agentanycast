@@ -24,49 +24,39 @@ Or use TypeScript:
 npm install agentanycast
 ```
 
-With framework adapters:
+## Fastest Way to Try It
+
+![AgentAnycast Demo](assets/demo.svg)
+
+Run a demo echo agent with one command:
 
 ```bash
-pip install agentanycast[crewai]         # CrewAI integration
-pip install agentanycast[langgraph]      # LangGraph integration
-pip install agentanycast[google-adk]     # Google ADK integration
-pip install agentanycast[openai-agents]  # OpenAI Agents SDK integration
+pip install agentanycast && agentanycast demo
 ```
 
-### (Optional) Build the daemon from source
+On first run, the daemon binary downloads automatically (you'll see progress). Once ready, you'll see:
 
-If you prefer to build the daemon yourself:
+```
+  Echo Agent is running!
+
+    Peer ID:  12D3KooWAbCdEf...
+    Skill:    echo
+
+    Try it -- open another terminal and run:
+
+      agentanycast send 12D3KooWAbCdEf... "Hello, world!"
+
+    Waiting for incoming tasks... (Ctrl+C to stop)
+```
+
+Open a second terminal and paste the `agentanycast send` command. You'll see the echo response instantly.
+
+More CLI commands:
 
 ```bash
-git clone https://github.com/AgentAnycast/agentanycast-node.git
-cd agentanycast-node
-go build -o agentanycastd ./cmd/agentanycastd/
-```
-
-Then tell the SDK where to find it:
-
-```python
-async with Node(card=card, daemon_path="/path/to/agentanycastd") as node:
-    ...
-```
-
-## CLI Quick Start
-
-The SDK includes a CLI for quick experimentation:
-
-```bash
-# Start an echo agent
-agentanycast demo
-# Output: Echo Agent started. Peer ID: 12D3KooWAbCdEf...
-
-# In another terminal, send it a task
-agentanycast send 12D3KooWAbCdEf... "Hello!"
-
-# Check node status
-agentanycast status
-
-# Discover agents by skill (requires relay)
-agentanycast discover translate
+agentanycast status                      # Check node status
+agentanycast discover translate          # Find agents by skill (requires relay)
+agentanycast info                        # Show version and config
 ```
 
 ## Your First Agent
@@ -257,6 +247,36 @@ When you send a task:
 3. Traffic is **end-to-end encrypted** with Noise_XX — even relay servers can't read it
 4. Remote daemon delivers the envelope to the remote SDK
 5. Remote agent's `@on_task` handler processes the task
+
+## Framework Adapters
+
+Turn existing agent frameworks into P2P agents:
+
+```bash
+pip install agentanycast[crewai]         # CrewAI
+pip install agentanycast[langgraph]      # LangGraph
+pip install agentanycast[google-adk]     # Google ADK
+pip install agentanycast[openai-agents]  # OpenAI Agents SDK
+```
+
+See [Examples](examples.md) for adapter usage.
+
+## Building the Daemon from Source
+
+If you prefer to build the daemon yourself instead of using the auto-downloaded binary:
+
+```bash
+git clone https://github.com/AgentAnycast/agentanycast-node.git
+cd agentanycast-node
+go build -o agentanycastd ./cmd/agentanycastd/
+```
+
+Then tell the SDK where to find it:
+
+```python
+async with Node(card=card, daemon_path="/path/to/agentanycastd") as node:
+    ...
+```
 
 ## Next Steps
 

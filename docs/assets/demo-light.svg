@@ -1,0 +1,105 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 820 580" font-family="'SF Mono', 'Menlo', 'Monaco', 'Cascadia Code', monospace" font-size="13">
+  <style>
+    @keyframes typeLine1 { from { opacity: 0 } to { opacity: 1 } }
+    @keyframes typeLine2 { from { opacity: 0 } to { opacity: 1 } }
+    @keyframes typeLine3 { from { opacity: 0 } to { opacity: 1 } }
+    @keyframes cursor { 0%,100% { opacity: 1 } 50% { opacity: 0 } }
+    .line1 { animation: typeLine1 0.3s ease-out 0.5s both; }
+    .line2 { animation: typeLine2 0.3s ease-out 1.2s both; }
+    .status1 { animation: typeLine3 0.2s ease-out 1.6s both; }
+    .status2 { animation: typeLine1 0.2s ease-out 2.0s both; }
+    .output1 { animation: typeLine1 0.2s ease-out 2.4s both; }
+    .output2 { animation: typeLine2 0.2s ease-out 2.6s both; }
+    .output3 { animation: typeLine3 0.2s ease-out 2.8s both; }
+    .output4 { animation: typeLine1 0.2s ease-out 3.0s both; }
+    .output5 { animation: typeLine2 0.2s ease-out 3.2s both; }
+    .output6 { animation: typeLine3 0.2s ease-out 3.4s both; }
+    .task1 { animation: typeLine1 0.2s ease-out 5.0s both; }
+    .task2 { animation: typeLine2 0.2s ease-out 5.2s both; }
+    .task3 { animation: typeLine3 0.2s ease-out 5.4s both; }
+    .t2cmd { animation: typeLine1 0.3s ease-out 4.0s both; }
+    .t2out1 { animation: typeLine2 0.2s ease-out 4.4s both; }
+    .t2out2 { animation: typeLine3 0.2s ease-out 4.8s both; }
+    .t2out3 { animation: typeLine1 0.2s ease-out 5.0s both; }
+  </style>
+
+  <!-- Terminal window -->
+  <rect width="820" height="580" rx="10" fill="#f8f9fc"/>
+
+  <!-- Title bar -->
+  <rect width="820" height="36" rx="10" fill="#e8eaf0"/>
+  <rect y="26" width="820" height="10" fill="#e8eaf0"/>
+  <circle cx="20" cy="18" r="6" fill="#ff5f57"/>
+  <circle cx="40" cy="18" r="6" fill="#febc2e"/>
+  <circle cx="60" cy="18" r="6" fill="#28c840"/>
+  <text x="410" y="22" fill="#64748b" font-size="12" text-anchor="middle">Terminal 1 — Echo Agent</text>
+
+  <!-- Terminal 1 content -->
+  <g transform="translate(16, 52)">
+    <!-- Prompt + command -->
+    <text y="0" class="line1">
+      <tspan fill="#2563eb">$</tspan>
+      <tspan fill="#1e293b"> pip install agentanycast &amp;&amp; agentanycast demo</tspan>
+    </text>
+
+    <!-- Status callbacks -->
+    <text y="24" class="status1" fill="#0284c7">  Downloading daemon (v0.7.0)...</text>
+    <text y="44" class="status2" fill="#0284c7">  Daemon ready.</text>
+
+    <!-- Enhanced demo output -->
+    <text y="72" class="output1" fill="#16a34a" font-weight="bold">  Echo Agent is running!</text>
+
+    <text y="96" class="output2">
+      <tspan fill="#64748b">  Peer ID:  </tspan>
+      <tspan fill="#1e293b" font-weight="bold">12D3KooWAXE5BWmY...4iJs</tspan>
+    </text>
+    <text y="114" class="output3" fill="#64748b">  Skill:    echo</text>
+
+    <text y="140" class="output4">
+      <tspan fill="#ca8a04" font-weight="bold">  Try it</tspan>
+      <tspan fill="#64748b"> -- open another terminal and run:</tspan>
+    </text>
+    <text y="162" class="output5" fill="#1e293b" font-weight="bold">    agentanycast send 12D3KooWAXE5BWmY...4iJs "Hello, world!"</text>
+    <text y="184" class="output6" fill="#64748b">  Waiting for incoming tasks... (Ctrl+C to stop)</text>
+
+    <!-- Task received -->
+    <text y="212" class="task1">
+      <tspan fill="#0284c7">  Task received </tspan>
+      <tspan fill="#64748b">[a1b2c3d4...] </tspan>
+      <tspan fill="#16a34a">2ms</tspan>
+    </text>
+    <text y="232" class="task2" fill="#64748b">    Input:  'Hello, world!'</text>
+    <text y="252" class="task3" fill="#16a34a">    Reply:  Echo: Hello, world!</text>
+  </g>
+
+  <!-- Divider -->
+  <line x1="0" y1="320" x2="820" y2="320" stroke="#cbd5e1" stroke-width="1"/>
+
+  <!-- Title bar 2 -->
+  <rect y="320" width="820" height="30" fill="#e8eaf0"/>
+  <text x="410" y="340" fill="#64748b" font-size="12" text-anchor="middle">Terminal 2 — Send Task</text>
+
+  <!-- Terminal 2 content -->
+  <g transform="translate(16, 366)">
+    <text y="0" class="t2cmd">
+      <tspan fill="#2563eb">$</tspan>
+      <tspan fill="#1e293b"> agentanycast send 12D3KooWAXE5BWmY...4iJs "Hello, world!"</tspan>
+    </text>
+
+    <text y="30" class="t2out1" fill="#0284c7">  Daemon ready.</text>
+
+    <text y="58" class="t2out2">
+      <tspan fill="#16a34a" font-weight="bold">  Task completed </tspan>
+      <tspan fill="#0284c7">(0.3s)</tspan>
+    </text>
+    <text y="78" class="t2out3">
+      <tspan fill="#64748b">  Response: </tspan>
+      <tspan fill="#1e293b" font-weight="bold">Echo: Hello, world!</tspan>
+    </text>
+
+    <!-- Info box -->
+    <rect y="108" width="788" height="60" rx="6" fill="#dbeafe" fill-opacity="1" stroke="#3b82f6" stroke-width="0.8"/>
+    <text y="130" fill="#2563eb" font-size="12">  Zero configuration. End-to-end encrypted (Noise_XX).</text>
+    <text y="148" fill="#2563eb" font-size="12">  No public IP. No VPN. No certificates. Just works.</text>
+  </g>
+</svg>

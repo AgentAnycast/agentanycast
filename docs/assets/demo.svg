@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 820 520" font-family="'SF Mono', 'Menlo', 'Monaco', 'Cascadia Code', monospace" font-size="13">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 820 580" font-family="'SF Mono', 'Menlo', 'Monaco', 'Cascadia Code', monospace" font-size="13">
   <style>
     @keyframes typeLine1 { from { opacity: 0 } to { opacity: 1 } }
     @keyframes typeLine2 { from { opacity: 0 } to { opacity: 1 } }
@@ -6,20 +6,25 @@
     @keyframes cursor { 0%,100% { opacity: 1 } 50% { opacity: 0 } }
     .line1 { animation: typeLine1 0.3s ease-out 0.5s both; }
     .line2 { animation: typeLine2 0.3s ease-out 1.2s both; }
-    .line3 { animation: typeLine3 0.3s ease-out 1.5s both; }
-    .output1 { animation: typeLine1 0.2s ease-out 1.8s both; }
-    .output2 { animation: typeLine2 0.2s ease-out 2.0s both; }
-    .output3 { animation: typeLine3 0.2s ease-out 2.2s both; }
-    .output4 { animation: typeLine1 0.2s ease-out 2.4s both; }
-    .output5 { animation: typeLine2 0.2s ease-out 2.6s both; }
-    .t2cmd { animation: typeLine1 0.3s ease-out 3.2s both; }
-    .t2out1 { animation: typeLine2 0.2s ease-out 3.8s both; }
-    .t2out2 { animation: typeLine3 0.2s ease-out 4.2s both; }
-    .t2out3 { animation: typeLine1 0.2s ease-out 4.6s both; }
+    .status1 { animation: typeLine3 0.2s ease-out 1.6s both; }
+    .status2 { animation: typeLine1 0.2s ease-out 2.0s both; }
+    .output1 { animation: typeLine1 0.2s ease-out 2.4s both; }
+    .output2 { animation: typeLine2 0.2s ease-out 2.6s both; }
+    .output3 { animation: typeLine3 0.2s ease-out 2.8s both; }
+    .output4 { animation: typeLine1 0.2s ease-out 3.0s both; }
+    .output5 { animation: typeLine2 0.2s ease-out 3.2s both; }
+    .output6 { animation: typeLine3 0.2s ease-out 3.4s both; }
+    .task1 { animation: typeLine1 0.2s ease-out 5.0s both; }
+    .task2 { animation: typeLine2 0.2s ease-out 5.2s both; }
+    .task3 { animation: typeLine3 0.2s ease-out 5.4s both; }
+    .t2cmd { animation: typeLine1 0.3s ease-out 4.0s both; }
+    .t2out1 { animation: typeLine2 0.2s ease-out 4.4s both; }
+    .t2out2 { animation: typeLine3 0.2s ease-out 4.8s both; }
+    .t2out3 { animation: typeLine1 0.2s ease-out 5.0s both; }
   </style>
 
   <!-- Terminal window -->
-  <rect width="820" height="520" rx="10" fill="#1a1b26"/>
+  <rect width="820" height="580" rx="10" fill="#1a1b26"/>
 
   <!-- Title bar -->
   <rect width="820" height="36" rx="10" fill="#24283b"/>
@@ -34,53 +39,67 @@
     <!-- Prompt + command -->
     <text y="0" class="line1">
       <tspan fill="#7aa2f7">$</tspan>
-      <tspan fill="#c0caf5"> pip install agentanycast</tspan>
+      <tspan fill="#c0caf5"> pip install agentanycast &amp;&amp; agentanycast demo</tspan>
     </text>
 
-    <text y="22" class="line2">
-      <tspan fill="#7aa2f7">$</tspan>
-      <tspan fill="#c0caf5"> agentanycast demo</tspan>
+    <!-- Status callbacks -->
+    <text y="24" class="status1" fill="#7dcfff">  Downloading daemon (v0.7.0)...</text>
+    <text y="44" class="status2" fill="#7dcfff">  Daemon ready.</text>
+
+    <!-- Enhanced demo output -->
+    <text y="72" class="output1" fill="#9ece6a" font-weight="bold">  Echo Agent is running!</text>
+
+    <text y="96" class="output2">
+      <tspan fill="#565f89">  Peer ID:  </tspan>
+      <tspan fill="#c0caf5" font-weight="bold">12D3KooWAXE5BWmY...4iJs</tspan>
     </text>
+    <text y="114" class="output3" fill="#565f89">  Skill:    echo</text>
 
-    <!-- Demo output -->
-    <text y="52" class="output1" fill="#9ece6a">Echo agent started. PeerID: 12D3KooWAXE5BWmY...4iJs</text>
-    <text y="72" class="output2" fill="#565f89">Waiting for incoming tasks... (Ctrl+C to stop)</text>
+    <text y="140" class="output4">
+      <tspan fill="#e0af68" font-weight="bold">  Try it</tspan>
+      <tspan fill="#565f89"> -- open another terminal and run:</tspan>
+    </text>
+    <text y="162" class="output5" fill="#c0caf5" font-weight="bold">    agentanycast send 12D3KooWAXE5BWmY...4iJs "Hello, world!"</text>
+    <text y="184" class="output6" fill="#565f89">  Waiting for incoming tasks... (Ctrl+C to stop)</text>
 
-    <text y="102" class="output3" fill="#bb9af7">Received task abc123: "Hello from Agent B!"</text>
-    <text y="122" class="output4" fill="#9ece6a">  Replied: "Echo: Hello from Agent B!"</text>
-    <text y="152" class="output5" fill="#bb9af7">Received task def456: "Translate this to French"</text>
+    <!-- Task received -->
+    <text y="212" class="task1">
+      <tspan fill="#7dcfff">  Task received </tspan>
+      <tspan fill="#565f89">[a1b2c3d4...] </tspan>
+      <tspan fill="#9ece6a">2ms</tspan>
+    </text>
+    <text y="232" class="task2" fill="#565f89">    Input:  'Hello, world!'</text>
+    <text y="252" class="task3" fill="#9ece6a">    Reply:  Echo: Hello, world!</text>
   </g>
 
   <!-- Divider -->
-  <line x1="0" y1="260" x2="820" y2="260" stroke="#3b4261" stroke-width="1"/>
+  <line x1="0" y1="320" x2="820" y2="320" stroke="#3b4261" stroke-width="1"/>
 
   <!-- Title bar 2 -->
-  <rect y="260" width="820" height="30" fill="#24283b"/>
-  <text x="410" y="280" fill="#565f89" font-size="12" text-anchor="middle">Terminal 2 — Send Task</text>
+  <rect y="320" width="820" height="30" fill="#24283b"/>
+  <text x="410" y="340" fill="#565f89" font-size="12" text-anchor="middle">Terminal 2 — Send Task</text>
 
   <!-- Terminal 2 content -->
-  <g transform="translate(16, 306)">
+  <g transform="translate(16, 366)">
     <text y="0" class="t2cmd">
       <tspan fill="#7aa2f7">$</tspan>
-      <tspan fill="#c0caf5"> agentanycast send 12D3KooWAXE5BWmY...4iJs "Hello from Agent B!"</tspan>
+      <tspan fill="#c0caf5"> agentanycast send 12D3KooWAXE5BWmY...4iJs "Hello, world!"</tspan>
     </text>
 
-    <text y="30" class="t2out1">
-      <tspan fill="#565f89">Sending task to 12D3KooWAXE5BWmY...4iJs...</tspan>
+    <text y="30" class="t2out1" fill="#7dcfff">  Daemon ready.</text>
+
+    <text y="58" class="t2out2">
+      <tspan fill="#9ece6a" font-weight="bold">  Task completed </tspan>
+      <tspan fill="#7dcfff">(0.3s)</tspan>
     </text>
-    <text y="50" class="t2out2">
-      <tspan fill="#9ece6a">Task abc123 completed (status: completed)</tspan>
-    </text>
-    <text y="70" class="t2out3">
-      <tspan fill="#c0caf5">  Artifact: echo</tspan>
-    </text>
-    <text y="90" class="t2out3">
-      <tspan fill="#7dcfff">    Echo: Hello from Agent B!</tspan>
+    <text y="78" class="t2out3">
+      <tspan fill="#565f89">  Response: </tspan>
+      <tspan fill="#c0caf5" font-weight="bold">Echo: Hello, world!</tspan>
     </text>
 
     <!-- Info box -->
-    <rect y="120" width="788" height="60" rx="6" fill="#1e40af" fill-opacity="0.15" stroke="#3b82f6" stroke-width="0.8"/>
-    <text y="142" fill="#7aa2f7" font-size="12">  Zero configuration. End-to-end encrypted (Noise_XX).</text>
-    <text y="160" fill="#7aa2f7" font-size="12">  No public IP. No VPN. No certificates. Just works.</text>
+    <rect y="108" width="788" height="60" rx="6" fill="#1e40af" fill-opacity="0.15" stroke="#3b82f6" stroke-width="0.8"/>
+    <text y="130" fill="#7aa2f7" font-size="12">  Zero configuration. End-to-end encrypted (Noise_XX).</text>
+    <text y="148" fill="#7aa2f7" font-size="12">  No public IP. No VPN. No certificates. Just works.</text>
   </g>
 </svg>

@@ -9,16 +9,24 @@
 </p>
 
 <p align="center">
+  <a href="https://github.com/AgentAnycast/agentanycast/actions/workflows/ci-proto.yml"><img src="https://github.com/AgentAnycast/agentanycast/actions/workflows/ci-proto.yml/badge.svg" alt="CI"></a>
   <a href="https://pypi.org/project/agentanycast/"><img src="https://img.shields.io/pypi/v/agentanycast?label=Python%20SDK&color=3776AB" alt="PyPI"></a>
   <a href="https://www.npmjs.com/package/agentanycast"><img src="https://img.shields.io/npm/v/agentanycast?label=TypeScript%20SDK&color=3178C6" alt="npm"></a>
   <a href="https://pypi.org/project/agentanycast-mcp/"><img src="https://img.shields.io/pypi/v/agentanycast-mcp?label=MCP%20Server&color=8B5CF6" alt="MCP Server"></a>
   <a href="https://github.com/AgentAnycast/agentanycast-node/releases"><img src="https://img.shields.io/github/v/release/AgentAnycast/agentanycast-node?label=Daemon&color=00ADD8" alt="Daemon"></a>
+  <a href="https://pypi.org/project/agentanycast/"><img src="https://img.shields.io/pypi/dm/agentanycast?label=Downloads&color=orange" alt="Downloads"></a>
   <a href="#license"><img src="https://img.shields.io/badge/license-Apache%202.0%20%2F%20FSL-green" alt="License"></a>
 </p>
 
-<br>
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/assets/demo.svg">
+    <source media="(prefers-color-scheme: light)" srcset="docs/assets/demo-light.svg">
+    <img src="docs/assets/demo.svg" alt="AgentAnycast Demo" width="100%">
+  </picture>
+</p>
 
-AgentAnycast is a **peer-to-peer runtime for the [A2A protocol](https://github.com/a2aproject/A2A)**. It lets AI agents discover each other by skill, communicate with end-to-end encryption, and traverse NATs automatically -- so agents on laptops, behind corporate firewalls, or across continents can work together without a central server.
+**AI agents can't talk to each other across networks.** The [A2A protocol](https://github.com/a2aproject/A2A) assumes every agent has a public URL -- but real agents run on laptops, behind NATs, inside corporate firewalls. AgentAnycast is a **P2P runtime** that gives any agent a reachable identity with `pip install` and three lines of code. End-to-end encrypted, NAT-traversing, zero config on LAN.
 
 ```
 pip install agentanycast        # Python SDK
@@ -26,16 +34,27 @@ npm install agentanycast        # TypeScript SDK
 uvx agentanycast-mcp            # MCP Server for Claude, Cursor, VS Code, etc.
 ```
 
+### Try it in 30 seconds
+
+```bash
+pip install agentanycast && agentanycast demo
+# Open another terminal:
+agentanycast send <PEER_ID> "Hello!"
+```
+
+The demo starts an echo agent, auto-downloads the daemon, and prints the exact command to test it.
+
 ## Why AgentAnycast?
 
-The A2A protocol assumes every agent is an HTTP server with a public URL. That excludes most real-world agents -- the ones running on developer machines, behind NATs, or inside private networks. No mainstream framework solves cross-network agent communication without a centralized gateway.
+The A2A protocol assumes every agent has a public URL. That excludes agents on laptops, behind NATs, or inside private networks. AgentAnycast fixes this:
 
-AgentAnycast fixes this:
-
-- **`pip install` and you're reachable** -- no DNS, no port forwarding, no cloud deployment. The Go sidecar daemon is auto-managed.
-- **Find agents by what they do, not where they are** -- skill-based anycast routing discovers the right agent automatically.
-- **End-to-end encrypted through relays** -- Noise_XX protocol ensures even relay servers see only ciphertext. No plaintext path exists in the codebase.
-- **Works from behind any firewall** -- automatic NAT traversal via hole-punching (DCUtR), with relay fallback when needed.
+| | |
+|:---|:---|
+| **No public IP needed** | `pip install` and your agent is reachable. The Go sidecar daemon is auto-managed. |
+| **Find by skill, not address** | Anycast routing discovers the right agent by capability. No URLs, no DNS. |
+| **E2E encrypted** | Noise_XX protocol. Relay servers see only ciphertext. No plaintext path in the codebase. |
+| **Works behind any firewall** | Automatic NAT traversal (DCUtR hole-punching + relay fallback). |
+| **Cross-language** | Python and TypeScript agents interoperate on the same network. |
 
 ## Quick Start
 
@@ -122,17 +141,13 @@ See [platform-specific setup](https://github.com/AgentAnycast/agentanycast-mcp) 
 
 AgentAnycast uses a **sidecar architecture**: a thin SDK talks to a local Go daemon over gRPC. The daemon handles all P2P networking, encryption, and protocol logic.
 
-```
-                        Your Machine                                     Remote Machine
-┌──────────────────────────────────────────┐         ┌──────────────────────────────────────────┐
-│                                          │         │                                          │
-│  ┌────────────┐     ┌────────────────┐   │         │   ┌────────────────┐     ┌────────────┐  │
-│  │ Your App   │     │ agentanycastd  │   │  libp2p │   │ agentanycastd  │     │ Remote App │  │
-│  │ (Python/TS)│────►│ (Go daemon)    │◄──┼─────────┼──►│ (Go daemon)    │◄────│ (any lang) │  │
-│  └────────────┘gRPC └────────────────┘   │  Noise  │   └────────────────┘gRPC └────────────┘  │
-│                                          │  E2E    │                                          │
-└──────────────────────────────────────────┘         └──────────────────────────────────────────┘
-```
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/assets/architecture.svg">
+    <source media="(prefers-color-scheme: light)" srcset="docs/assets/architecture-light.svg">
+    <img src="docs/assets/architecture.svg" alt="AgentAnycast Architecture" width="100%">
+  </picture>
+</p>
 
 - **On a LAN** -- agents find each other via mDNS. Zero configuration.
 - **Across networks** -- deploy a [self-hosted relay](https://github.com/AgentAnycast/agentanycast-relay). Agents connect through it, but the relay **cannot read traffic** (end-to-end encrypted).
@@ -204,14 +219,13 @@ await serve_strands_agent(my_agent, card=card)              # AWS Strands Agents
 
 ## Comparison
 
-| Feature | AgentAnycast | Standard A2A | agentgateway | Tailscale Aperture |
-|---------|-------------|-------------|-------------|-----------|
-| NAT Traversal | Automatic | Requires public IP | Requires public IP | Via DERP relays |
-| Encryption | E2E through relays (Noise_XX) | TLS (terminates at server) | TLS (proxy decrypts) | E2E (WireGuard) |
-| Skill-based Routing | Anycast by capability | URL-based only | Static config | -- |
-| MCP Server | Built-in (6 tools) | -- | Built-in | -- |
-| Decentralized | P2P + DHT | Central server | Central gateway | Coordination server |
-| Setup | `pip install` + 3 lines | HTTP server + public URL | Gateway deployment | Account + client install |
+| | AgentAnycast | Standard A2A | agentgateway |
+|:---|:---:|:---:|:---:|
+| Works behind NAT | Yes (automatic) | No | No |
+| E2E encrypted through relays | Yes (Noise_XX) | No (TLS terminates) | No (proxy decrypts) |
+| Skill-based routing | Yes | No | No |
+| MCP server built-in | Yes | No | Yes |
+| Setup complexity | `pip install` + 3 lines | HTTP server + public IP | Gateway deployment |
 
 ## Self-Hosted Relay
 
@@ -243,6 +257,10 @@ The relay is a **zero-knowledge forwarder** -- it passes only encrypted bytes. I
 | **[agentanycast-ts](https://github.com/AgentAnycast/agentanycast-ts)** | TypeScript | TypeScript SDK -- `npm install agentanycast` |
 | **[agentanycast-node](https://github.com/AgentAnycast/agentanycast-node)** | Go | Core daemon -- P2P networking, encryption, A2A engine |
 | **[agentanycast-relay](https://github.com/AgentAnycast/agentanycast-relay)** | Go | Relay server + skill registry + multi-relay federation |
+
+## Examples
+
+Start with [01-hello-world](examples/01-hello-world/) or explore [all examples](examples/) -- including CrewAI, LangGraph, Google ADK, OpenAI Agents, Claude Agent SDK, and AWS Strands integrations.
 
 ## Documentation
 
