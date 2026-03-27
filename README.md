@@ -16,7 +16,28 @@
   <a href="https://github.com/AgentAnycast/agentanycast-node/releases"><img src="https://img.shields.io/github/v/release/AgentAnycast/agentanycast-node?label=Daemon&color=00ADD8" alt="Daemon"></a>
   <a href="https://pypi.org/project/agentanycast/"><img src="https://img.shields.io/pypi/dm/agentanycast?label=Downloads&color=orange" alt="Downloads"></a>
   <a href="#license"><img src="https://img.shields.io/badge/license-Apache%202.0%20%2F%20FSL-green" alt="License"></a>
+  <br>
+  <a href="https://github.com/AgentAnycast/agentanycast/discussions"><img src="https://img.shields.io/github/discussions/AgentAnycast/agentanycast?label=Discussions&color=blue" alt="Discussions"></a>
+  <a href="https://github.com/AgentAnycast/agentanycast/stargazers"><img src="https://img.shields.io/github/stars/AgentAnycast/agentanycast?style=flat&label=Stars&color=yellow" alt="Stars"></a>
 </p>
+
+The [A2A protocol](https://github.com/a2aproject/A2A) assumes every agent has a public URL -- but real agents run on laptops, behind NATs, inside corporate firewalls. AgentAnycast is a **P2P runtime** that gives any agent a reachable identity. End-to-end encrypted, NAT-traversing, zero config on LAN.
+
+### Try it now
+
+```bash
+pip install agentanycast && agentanycast demo
+# Open another terminal:
+agentanycast send <PEER_ID> "Hello!"
+```
+
+The daemon downloads automatically. The demo prints the exact command to test it.
+
+```
+pip install agentanycast        # Python SDK
+npm install agentanycast        # TypeScript SDK
+uvx agentanycast-mcp            # MCP Server for Claude, Cursor, VS Code, etc.
+```
 
 <p align="center">
   <picture>
@@ -25,24 +46,6 @@
     <img src="docs/assets/demo.svg" alt="AgentAnycast Demo" width="100%">
   </picture>
 </p>
-
-**AI agents can't talk to each other across networks.** The [A2A protocol](https://github.com/a2aproject/A2A) assumes every agent has a public URL -- but real agents run on laptops, behind NATs, inside corporate firewalls. AgentAnycast is a **P2P runtime** that gives any agent a reachable identity with `pip install` and three lines of code. End-to-end encrypted, NAT-traversing, zero config on LAN.
-
-```
-pip install agentanycast        # Python SDK
-npm install agentanycast        # TypeScript SDK
-uvx agentanycast-mcp            # MCP Server for Claude, Cursor, VS Code, etc.
-```
-
-### Try it in 30 seconds
-
-```bash
-pip install agentanycast && agentanycast demo
-# Open another terminal:
-agentanycast send <PEER_ID> "Hello!"
-```
-
-The demo starts an echo agent, auto-downloads the daemon, and prints the exact command to test it.
 
 ## Why AgentAnycast?
 
