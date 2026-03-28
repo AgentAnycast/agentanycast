@@ -19,22 +19,22 @@ jobs:
 
     steps:
       - name: Checkout main repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Checkout relay
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           repository: agentanycast/agentanycast-relay
           path: agentanycast-relay
 
       - name: Checkout node
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           repository: agentanycast/agentanycast-node
           path: agentanycast-node
 
       - name: Checkout python SDK
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           repository: agentanycast/agentanycast-python
           path: agentanycast-python
