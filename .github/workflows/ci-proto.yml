@@ -58,7 +58,7 @@ jobs:
       - name: Generate code from proto
         run: buf generate
 
-      - uses: actions/setup-go@v5
+      - uses: actions/setup-go@v6
         with:
           go-version-file: proto/go.mod
           cache: true
